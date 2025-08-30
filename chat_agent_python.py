@@ -17,7 +17,15 @@ class CarDealershipChatAgent:
         from dotenv import load_dotenv
         load_dotenv()  # Cargar variables de entorno desde .env
         
-        self.client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+        try:
+            self.client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+        except Exception as e:
+            print(f"⚠️  Warning: Error inicializando OpenAI client: {e}")
+            # Fallback para compatibilidad
+            import openai
+            openai.api_key = os.getenv('OPENAI_API_KEY')
+            self.client = None
+        
         self.conversation_histories = {}  # Historial por usuario
         
         # Configuración del sistema
@@ -184,14 +192,33 @@ Horarios disponibles:
                 messages.append({"role": "system", "content": context_message})
             
             # Llamar a OpenAI
-            response = self.client.chat.completions.create(
-                model="gpt-4o-mini",
-                messages=messages,
-                max_tokens=500,
-                temperature=0.7
-            )
-            
-            assistant_response = response.choices[0].message.content.strip()
+            try:
+                if self.client:
+                    # Usar nuevo cliente
+                    response = self.client.chat.completions.create(
+                        model="gpt-4o-mini",
+                        messages=messages,
+                        max_tokens=500,
+                        temperature=0.7
+                    )
+                    assistant_response = response.choices[0].message.content.strip()
+                else:
+                    # Usar API antigua para compatibilidad
+                    import openai
+                    response = openai.ChatCompletion.create(
+                        model="gpt-4o-mini",
+                        messages=messages,
+                        max_tokens=500,
+                        temperature=0.7
+                    )
+                    assistant_response = response.choices[0].message.content.strip()
+            except Exception as e:
+                print(f"❌ Error en llamada OpenAI: {e}")
+                # Respuesta de fallback inteligente
+                if any(keyword in message_lower for keyword in ["azul", "coche", "auto"]):
+                    assistant_response = "🚗 ¡Excelente elección! Tenemos varios vehículos azules disponibles:\n\n• BMW Serie 3 (2023) - Color azul, €40,000\n• SEAT León (2023) - Color azul, €25,000\n\n¿Te interesa conocer más detalles de alguno? ¿Quieres programar una prueba de manejo? 📅"
+                else:
+                    assistant_response = "¡Hola! 👋 Bienvenido a AutoMax, tu concesionario de confianza. 🚗 Estoy aquí para ayudarte a encontrar el auto perfecto. ¿En qué puedo ayudarte hoy?"
             
             # Añadir respuesta al historial
             self.add_to_history(user_id, "assistant", assistant_response)

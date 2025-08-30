@@ -334,29 +334,47 @@ Remember: Respond with ONLY the JSON object containing the translated text, no a
         
         if vehicle_id in cars:
             car = cars[vehicle_id]
-            result = f"🚗 **{car['marca']} {car['modelo']} {car['año']}**\n\n"
-            result += f"💰 **Precio:** {car['precio']}\n"
-            result += f"🎨 **Color:** {car['color']}\n"
-            result += f"📊 **Kilometraje:** {car['km']}\n\n"
             
-            result += "🔧 **Especificaciones Técnicas:**\n"
-            result += f"• Motor: {car['motor']}\n"
-            result += f"• Potencia: {car['potencia']}\n"
-            result += f"• Transmisión: {car['transmision']}\n"
-            result += f"• Tracción: {car['traccion']}\n"
-            result += f"• Consumo: {car['consumo']}\n"
-            result += f"• Emisiones: {car['emisiones']}\n\n"
+            # Formato visual mejorado sin asteriscos
+            result = f"🚗 {car['marca']} {car['modelo']} ({car['año']})\n"
+            result += "═══════════════════════════════\n\n"
             
-            result += "📏 **Dimensiones:**\n"
-            result += f"• Exterior: {car['dimensiones']}\n"
-            result += f"• Maletero: {car['capacidad_maletero']}\n\n"
+            # Información básica con diseño limpio
+            result += f"💰 Precio: {car['precio']}\n"
+            result += f"🎨 Color: {car['color']}\n"
+            result += f"📊 Kilometraje: {car['km']}\n"
+            result += f"🚙 Tipo: {car['tipo']}\n\n"
             
-            result += "✨ **Características destacadas:**\n"
-            for feature in car['caracteristicas']:
-                result += f"• {feature}\n"
+            # Especificaciones técnicas con emojis organizados
+            result += "🔧 ESPECIFICACIONES TÉCNICAS\n"
+            result += "───────────────────────────────\n"
+            result += f"⚡ Motor: {car['motor']}\n"
+            result += f"🏎️ Potencia: {car['potencia']}\n"
+            result += f"⚙️ Transmisión: {car['transmision']}\n"
+            result += f"🚗 Tracción: {car['traccion']}\n"
+            result += f"⛽ Consumo: {car['consumo']}\n"
+            result += f"🌱 Emisiones: {car['emisiones']}\n\n"
             
-            result += f"\n🛡️ **Garantía:** {car['garantia']}\n\n"
-            result += "📅 ¿Te gustaría agendar una cita para verlo en persona en nuestro concesionario?"
+            # Dimensiones con presentación clara
+            result += "📏 DIMENSIONES\n"
+            result += "───────────────────────────────\n"
+            result += f"📐 Exterior: {car['dimensiones']}\n"
+            result += f"🧳 Maletero: {car['capacidad_maletero']}\n\n"
+            
+            # Características con formato atractivo
+            result += "✨ CARACTERÍSTICAS DESTACADAS\n"
+            result += "───────────────────────────────\n"
+            for i, feature in enumerate(car['caracteristicas'], 1):
+                result += f"🔹 {feature}\n"
+            
+            # Garantía con formato especial
+            result += f"\n🛡️ GARANTÍA\n"
+            result += "───────────────────────────────\n"
+            result += f"📋 {car['garantia']}\n\n"
+            
+            # Call to action final
+            result += "🏢 ¿Te gustaría agendar una cita para verlo en nuestro concesionario?\n"
+            result += "📞 ¡Estamos listos para atenderte!"
             
             return result
         else:
@@ -546,18 +564,24 @@ Remember: Respond with ONLY the JSON object containing the translated text, no a
                 filtered_cars = [car for car in filtered_cars if car["marca"] == brand_value]
                 break
         
-        # Mostrar resultados
+        # Mostrar resultados - TODOS los vehículos disponibles
         if filtered_cars:
             result = "🚗 Vehículos disponibles:\n\n"
-            for i, car in enumerate(filtered_cars[:3], 1):  # Máximo 3 resultados
+            
+            # Mostrar TODOS los vehículos filtrados (no solo 3)
+            for i, car in enumerate(filtered_cars, 1):
                 result += f"{i}. {car['marca']} {car['modelo']} ({car['año']})\n"
                 result += f"   💰 Precio: {car['precio']}\n"
                 result += f"   🎨 Color: {car['color']}\n"
                 result += f"   ⚡ Motor: {car['motor']} - {car['potencia']}\n"
                 result += f"   📊 Kilometraje: {car['km']}\n\n"
             
-            if len(filtered_cars) > 3:
-                result += f"... y {len(filtered_cars) - 3} vehículos más disponibles.\n\n"
+            # Información adicional mejorada
+            total_vehicles = len(filtered_cars)
+            if total_vehicles == 1:
+                result += f"✅ Este es el único vehículo que coincide con tu búsqueda.\n\n"
+            else:
+                result += f"✅ Total: {total_vehicles} vehículos que coinciden con tu búsqueda.\n\n"
             
             result += "💡 Para información completa de cualquier vehículo, pregúntame por el modelo específico.\n"
             result += "📅 ¿Te gustaría programar una cita para verlos en persona?"

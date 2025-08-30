@@ -381,7 +381,8 @@ Remember: Respond with ONLY the JSON object containing the translated text, no a
                 ],
                 "dimensiones": "4.71m x 1.89m x 1.68m",
                 "capacidad_maletero": "550 litros",
-                "garantia": "2 años garantía de fábrica + 3 años BMW Service Inclusive"
+                "garantia": "2 años garantía de fábrica + 3 años BMW Service Inclusive",
+                "imagen": "images/bmw_x3.png"
             },
             "BMW_3_2023_BLU": {
                 "marca": "BMW", "modelo": "Serie 3", "año": 2023,
@@ -400,7 +401,8 @@ Remember: Respond with ONLY the JSON object containing the translated text, no a
                 ],
                 "dimensiones": "4.71m x 1.83m x 1.44m",
                 "capacidad_maletero": "480 litros",
-                "garantia": "2 años garantía de fábrica + 3 años BMW Service Inclusive"
+                "garantia": "2 años garantía de fábrica + 3 años BMW Service Inclusive",
+                "imagen": "images/bmw_serie_3.webp"
             },
             "SEAT_LEON_2023_BLU": {
                 "marca": "SEAT", "modelo": "León", "año": 2023,
@@ -419,7 +421,88 @@ Remember: Respond with ONLY the JSON object containing the translated text, no a
                 ],
                 "dimensiones": "4.37m x 1.80m x 1.46m",
                 "capacidad_maletero": "380 litros",
-                "garantia": "2 años garantía de fábrica"
+                "garantia": "2 años garantía de fábrica",
+                "imagen": "images/seat_leon.webp"
+            },
+            "MERCEDES_C_2023_BLK": {
+                "marca": "Mercedes-Benz", "modelo": "C-Class", "año": 2023,
+                "precio": "€42,000", "color": "negro obsidiana", "tipo": "sedán", 
+                "motor": "1.5L Turbo de 4 cilindros",
+                "combustible": "Gasolina", "transmision": "Automática 9G-TRONIC",
+                "km": "0 km (vehículo nuevo)", "potencia": "170 CV",
+                "consumo": "6.8L/100km", "emisiones": "155 g/km CO2",
+                "traccion": "Tracción trasera",
+                "caracteristicas": [
+                    "MBUX con inteligencia artificial",
+                    "Asientos deportivos AMG",
+                    "LED High Performance", 
+                    "Sistema de sonido Burmester",
+                    "Ambient lighting 64 colores"
+                ],
+                "dimensiones": "4.75m x 1.82m x 1.44m",
+                "capacidad_maletero": "455 litros",
+                "garantia": "2 años garantía Mercedes-Benz",
+                "imagen": "images/mercedes_c_class.png"
+            },
+            "AUDI_A4_2022_WHT": {
+                "marca": "Audi", "modelo": "A4", "año": 2022,
+                "precio": "€38,000", "color": "blanco glaciar", "tipo": "sedán",
+                "motor": "2.0L TFSI de 4 cilindros",
+                "combustible": "Gasolina", "transmision": "S tronic 7 velocidades",
+                "km": "15,000 km", "potencia": "190 CV",
+                "consumo": "6.5L/100km", "emisiones": "148 g/km CO2",
+                "traccion": "quattro",
+                "caracteristicas": [
+                    "Virtual Cockpit Plus",
+                    "quattro tracción integral",
+                    "Bang & Olufsen Premium Sound",
+                    "MMI Navigation plus",
+                    "Asientos deportivos"
+                ],
+                "dimensiones": "4.76m x 1.84m x 1.43m",
+                "capacidad_maletero": "460 litros",
+                "garantia": "1 año garantía restante",
+                "imagen": "images/audi_a4.png"
+            },
+            "VW_TIGUAN_2022_RED": {
+                "marca": "Volkswagen", "modelo": "Tiguan", "año": 2022,
+                "precio": "€32,000", "color": "rojo tornado", "tipo": "SUV",
+                "motor": "1.5L TSI de 4 cilindros",
+                "combustible": "Gasolina", "transmision": "DSG automático",
+                "km": "22,000 km", "potencia": "150 CV",
+                "consumo": "7.0L/100km", "emisiones": "160 g/km CO2",
+                "traccion": "4MOTION",
+                "caracteristicas": [
+                    "Digital Cockpit Pro",
+                    "4MOTION tracción integral",
+                    "App-Connect",
+                    "Park Assist",
+                    "Climatronic"
+                ],
+                "dimensiones": "4.49m x 1.84m x 1.67m",
+                "capacidad_maletero": "520 litros",
+                "garantia": "1 año garantía restante",
+                "imagen": "images/volkswagen_tiguan.webp"
+            },
+            "FORD_MUSTANG_2023_RED": {
+                "marca": "Ford", "modelo": "Mustang", "año": 2023,
+                "precio": "€55,000", "color": "rojo racing", "tipo": "deportivo",
+                "motor": "5.0L V8",
+                "combustible": "Gasolina", "transmision": "Manual 6 velocidades",
+                "km": "0 km (vehículo nuevo)", "potencia": "450 CV",
+                "consumo": "12.4L/100km", "emisiones": "290 g/km CO2",
+                "traccion": "Tracción trasera",
+                "caracteristicas": [
+                    "SYNC 3 con pantalla táctil",
+                    "Brembo frenos deportivos",
+                    "Recaro asientos deportivos",
+                    "Escape deportivo",
+                    "Launch Control"
+                ],
+                "dimensiones": "4.79m x 1.92m x 1.38m",
+                "capacidad_maletero": "408 litros",
+                "garantia": "2 años garantía Ford",
+                "imagen": "images/ford_mustang.jpeg"
             }
         }
         
@@ -467,9 +550,17 @@ Remember: Respond with ONLY the JSON object containing the translated text, no a
             result += "🏢 ¿Te gustaría agendar una cita para verlo en nuestro concesionario?\n"
             result += "📞 ¡Estamos listos para atenderte!"
             
+            # Almacenar la ruta de la imagen para uso posterior
+            self._last_vehicle_image = car.get("imagen")
+            
             return result
         else:
+            self._last_vehicle_image = None
             return "No encontré ese vehículo específico. ¿Puedes decirme qué modelo te interesa? Tengo información detallada de todos nuestros vehículos."
+
+    def get_last_vehicle_image(self) -> str:
+        """Obtiene la ruta de la imagen del último vehículo consultado"""
+        return getattr(self, '_last_vehicle_image', None)
 
     def schedule_appointment(self, details: str) -> str:
         """Programa cita presencial en el concesionario"""
@@ -803,15 +894,19 @@ Si busca opciones generales (como "¿qué BMW tenéis?"), es SEARCH_INVENTORY.""
                 
                 # Ejecutar la función apropiada basándose en la intención
                 if intent == "SEARCH_INVENTORY":
+                    self._last_vehicle_image = None  # Limpiar imagen anterior
                     return self.search_inventory(user_message)
                 elif intent == "VEHICLE_DETAILS":
                     vehicle_id = self.detect_specific_vehicle(user_message)
-                    return self.get_vehicle_details(vehicle_id)
+                    return self.get_vehicle_details(vehicle_id)  # La imagen se almacena internamente
                 elif intent == "SCHEDULE_APPOINTMENT":
+                    self._last_vehicle_image = None  # Limpiar imagen anterior
                     return self.schedule_appointment(user_message)
                 elif intent == "COMPANY_INFO":
+                    self._last_vehicle_image = None  # Limpiar imagen anterior
                     return self.get_company_info(user_message)
                 else:  # GENERAL_CHAT
+                    self._last_vehicle_image = None  # Limpiar imagen anterior
                     # Usar conversación normal con GPT
                     response = self.client.chat.completions.create(
                         model="gpt-4o-mini",

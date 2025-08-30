@@ -90,6 +90,9 @@ class CarDealershipWhatsAppAgent:
             # Añadir respuesta del agente al historial
             self.add_to_conversation(user_phone, "assistant", response)
             
+            # Verificar si hay una imagen para enviar (cuando se solicitan detalles de vehículo)
+            vehicle_image = self.chat_agent.get_last_vehicle_image()
+            
             # Actualizar estado del usuario
             self.update_user_state(user_phone, {
                 "last_interaction": message,
@@ -99,13 +102,22 @@ class CarDealershipWhatsAppAgent:
             # Determinar tipo de respuesta y acciones adicionales
             response_data = self._analyze_response(response, user_phone)
             
-            return {
+            result = {
                 "success": True,
                 "response": response,
                 "response_type": response_data["type"],
                 "actions": response_data["actions"],
                 "suggestions": response_data["suggestions"]
             }
+            
+            # Agregar información de imagen si está disponible
+            if vehicle_image:
+                result["image_path"] = vehicle_image
+                result["has_image"] = True
+            else:
+                result["has_image"] = False
+            
+            return result
             
         except Exception as e:
             print(f"❌ Error procesando mensaje de {user_phone}: {str(e)}")
@@ -114,7 +126,8 @@ class CarDealershipWhatsAppAgent:
                 "response": "Lo siento, hubo un error procesando tu mensaje. ¿Puedes intentar de nuevo?",
                 "response_type": "error",
                 "actions": [],
-                "suggestions": []
+                "suggestions": [],
+                "has_image": False
             }
     
     def _analyze_response(self, response: str, user_phone: str) -> Dict[str, Any]:

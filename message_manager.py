@@ -75,7 +75,9 @@ class MessageManager:
                     "response": agent_result["response"],
                     "response_type": agent_result["response_type"],
                     "actions": agent_result["actions"],
-                    "suggestions": agent_result["suggestions"]
+                    "suggestions": agent_result["suggestions"],
+                    "has_image": agent_result.get("has_image", False),
+                    "image_path": agent_result.get("image_path")
                 }
                 
                 self._send_response(user_phone, response_data)
@@ -191,10 +193,33 @@ class MessageManager:
     
     def _send_response(self, user_phone: str, response_data: Dict[str, Any]):
         """
-        Envía solo respuestas de texto (botones desactivados)
+        Envía respuestas de texto y opcionalmente imágenes
         """
-        # Solo enviar el texto principal
-        self.sender.send_text(user_phone, response_data["response"])
+        # Enviar imagen primero si está disponible
+        if response_data.get("has_image", False) and response_data.get("image_path"):
+            image_path = response_data["image_path"]
+            print(f"📸 Enviando imagen: {image_path}")
+            
+            # Verificar que el archivo existe
+            import os
+            full_path = os.path.join(os.getcwd(), image_path)
+            if os.path.exists(full_path):
+                try:
+                    # Enviar imagen con el texto como caption
+                    self.sender.send_image(user_phone, full_path, response_data["response"])
+                    print(f"✅ Imagen enviada exitosamente: {image_path}")
+                    return  # No enviar texto adicional ya que va como caption
+                except Exception as e:
+                    print(f"❌ Error enviando imagen {image_path}: {e}")
+                    # Si falla el envío de imagen, enviar solo texto
+                    self.sender.send_text(user_phone, response_data["response"])
+            else:
+                print(f"❌ Imagen no encontrada: {full_path}")
+                # Si no existe la imagen, enviar solo texto
+                self.sender.send_text(user_phone, response_data["response"])
+        else:
+            # Solo enviar el texto principal
+            self.sender.send_text(user_phone, response_data["response"])
         
         # NOTA: Botones, acciones y sugerencias desactivados intencionalmente
         # Para reactivar, descomenta las secciones comentadas abajo

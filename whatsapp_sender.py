@@ -12,9 +12,13 @@ class WhatsAppSender:
         self.access_token = access_token
         self.phone_number_id = phone_number_id
         self.base_url = f"https://graph.facebook.com/v18.0/{phone_number_id}/messages"
+        self.media_url = f"https://graph.facebook.com/v18.0/{phone_number_id}/media"
         self.headers = {
             "Authorization": f"Bearer {access_token}",
             "Content-Type": "application/json"
+        }
+        self.media_headers = {
+            "Authorization": f"Bearer {access_token}"
         }
     
     def _send_request(self, payload: Dict[str, Any]) -> Dict[str, Any]:
@@ -39,6 +43,52 @@ class WhatsAppSender:
         except Exception as e:
             print(f"❌ Excepción enviando mensaje: {str(e)}")
             return {"error": "Exception", "details": str(e)}
+    
+    def upload_media(self, file_path: str) -> Optional[str]:
+        """
+        Sube un archivo de media a WhatsApp y devuelve el media_id
+        """
+        try:
+            import os
+            import mimetypes
+            
+            if not os.path.exists(file_path):
+                print(f"❌ Archivo no encontrado: {file_path}")
+                return None
+            
+            # Determinar el tipo de archivo
+            mime_type, _ = mimetypes.guess_type(file_path)
+            if not mime_type or not mime_type.startswith('image/'):
+                print(f"❌ Tipo de archivo no soportado: {mime_type}")
+                return None
+            
+            # Preparar el archivo para subir
+            with open(file_path, 'rb') as file:
+                files = {
+                    'file': (os.path.basename(file_path), file, mime_type),
+                    'messaging_product': (None, 'whatsapp'),
+                    'type': (None, mime_type)
+                }
+                
+                print(f"📤 Subiendo media: {file_path}")
+                response = requests.post(
+                    url=self.media_url,
+                    files=files,
+                    headers=self.media_headers
+                )
+            
+            if response.status_code == 200:
+                result = response.json()
+                media_id = result.get('id')
+                print(f"✅ Media subido exitosamente. ID: {media_id}")
+                return media_id
+            else:
+                print(f"❌ Error subiendo media: {response.status_code} - {response.text}")
+                return None
+                
+        except Exception as e:
+            print(f"❌ Excepción subiendo media: {str(e)}")
+            return None
     
     def send_text(self, to: str, message: str) -> Dict[str, Any]:
         """
@@ -148,23 +198,50 @@ class WhatsAppSender:
         print(f"📤 Enviando lista a {to}: {len(sections)} secciones")
         return self._send_request(payload)
     
-    def send_image(self, to: str, image_url: str, caption: str = "") -> Dict[str, Any]:
+    def send_image(self, to: str, image_source: str, caption: str = "") -> Dict[str, Any]:
         """
         Envía una imagen con caption opcional
+        Acepta tanto rutas de archivos locales como URLs
         """
-        payload = {
-            "messaging_product": "whatsapp",
-            "recipient_type": "individual",
-            "to": to,
-            "type": "image",
-            "image": {
-                "link": image_url,
-                "caption": caption
-            }
-        }
-        
-        print(f"📤 Enviando imagen a {to}: {image_url}")
-        return self._send_request(payload)
+        try:
+            import os
+            
+            # Verificar si es un archivo local o una URL
+            if os.path.exists(image_source):
+                # Es un archivo local - subirlo primero
+                media_id = self.upload_media(image_source)
+                if not media_id:
+                    return {"error": "Failed to upload media"}
+                
+                payload = {
+                    "messaging_product": "whatsapp",
+                    "recipient_type": "individual", 
+                    "to": to,
+                    "type": "image",
+                    "image": {
+                        "id": media_id,
+                        "caption": caption
+                    }
+                }
+            else:
+                # Asumir que es una URL
+                payload = {
+                    "messaging_product": "whatsapp",
+                    "recipient_type": "individual",
+                    "to": to,
+                    "type": "image",
+                    "image": {
+                        "link": image_source,
+                        "caption": caption
+                    }
+                }
+            
+            print(f"📤 Enviando imagen a {to}: {image_source}")
+            return self._send_request(payload)
+            
+        except Exception as e:
+            print(f"❌ Error enviando imagen: {str(e)}")
+            return {"error": "Exception", "details": str(e)}
     
     def send_location(self, to: str, latitude: float, longitude: float, 
                       name: str, address: str) -> Dict[str, Any]:

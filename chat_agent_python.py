@@ -537,38 +537,77 @@ Remember: Respond with ONLY the JSON object containing the translated text, no a
             }
         ]
         
-        # Filtros de búsqueda
+        # Filtros de búsqueda MEJORADOS Y ESPECÍFICOS
         filtered_cars = cars.copy()
+        applied_filters = []  # Para rastrear qué filtros se aplicaron
         
-        # Filtrar por color
-        colors = {"azul": "azul", "blue": "azul", "rojo": "rojo", "red": "rojo", 
-                 "negro": "negro", "black": "negro", "blanco": "blanco", "white": "blanco"}
+        # Filtrar por COMBUSTIBLE (nuevo filtro crítico)
+        combustible_keywords = {
+            "eléctrico": "Eléctrico", "electrico": "Eléctrico", "electric": "Eléctrico",
+            "híbrido": "Híbrido", "hibrido": "Híbrido", "hybrid": "Híbrido",
+            "gasolina": "Gasolina", "gasoline": "Gasolina", "petrol": "Gasolina",
+            "diesel": "Diesel", "diésel": "Diesel"
+        }
+        
+        for fuel_key, fuel_value in combustible_keywords.items():
+            if fuel_key in query_lower:
+                original_count = len(filtered_cars)
+                filtered_cars = [car for car in filtered_cars if car["combustible"] == fuel_value]
+                applied_filters.append(f"combustible: {fuel_value}")
+                if len(filtered_cars) != original_count:
+                    break
+        
+        # Filtrar por color (mejorado)
+        colors = {
+            "azul": "azul", "blue": "azul", "bleu": "azul",
+            "rojo": "rojo", "red": "rojo", "rouge": "rojo", 
+            "negro": "negro", "black": "negro", "noir": "negro",
+            "blanco": "blanco", "white": "blanco", "blanc": "blanco",
+            "gris": "gris", "gray": "gris", "grey": "gris"
+        }
+        
         for color_key, color_value in colors.items():
             if color_key in query_lower:
-                filtered_cars = [car for car in filtered_cars if color_value in car["color"]]
-                break
+                original_count = len(filtered_cars)
+                filtered_cars = [car for car in filtered_cars if color_value in car["color"].lower()]
+                if len(filtered_cars) != original_count:
+                    applied_filters.append(f"color: {color_value}")
+                    break
         
-        # Filtrar por tipo
-        types = {"suv": "SUV", "sedan": "sedán", "sedán": "sedán", "deportivo": "deportivo", 
-                "sports": "deportivo", "hatchback": "hatchback"}
+        # Filtrar por tipo (mejorado)
+        types = {
+            "suv": "SUV", "sedan": "sedán", "sedán": "sedán", 
+            "deportivo": "deportivo", "sports": "deportivo", "sport": "deportivo",
+            "hatchback": "hatchback", "compacto": "hatchback"
+        }
+        
         for type_key, type_value in types.items():
             if type_key in query_lower:
+                original_count = len(filtered_cars)
                 filtered_cars = [car for car in filtered_cars if car["tipo"] == type_value]
-                break
+                if len(filtered_cars) != original_count:
+                    applied_filters.append(f"tipo: {type_value}")
+                    break
         
-        # Filtrar por marca
-        brands = {"bmw": "BMW", "mercedes": "Mercedes-Benz", "audi": "Audi", 
-                 "volkswagen": "Volkswagen", "vw": "Volkswagen", "seat": "SEAT", "ford": "Ford"}
+        # Filtrar por marca (mejorado)
+        brands = {
+            "bmw": "BMW", "mercedes": "Mercedes-Benz", "audi": "Audi", 
+            "volkswagen": "Volkswagen", "vw": "Volkswagen", "seat": "SEAT", "ford": "Ford"
+        }
+        
         for brand_key, brand_value in brands.items():
             if brand_key in query_lower:
+                original_count = len(filtered_cars)
                 filtered_cars = [car for car in filtered_cars if car["marca"] == brand_value]
-                break
+                if len(filtered_cars) != original_count:
+                    applied_filters.append(f"marca: {brand_value}")
+                    break
         
-        # Mostrar resultados - TODOS los vehículos disponibles
+        # RESPUESTA INTELIGENTE BASADA EN RESULTADOS
         if filtered_cars:
             result = "🚗 Vehículos disponibles:\n\n"
             
-            # Mostrar TODOS los vehículos filtrados (no solo 3)
+            # Mostrar TODOS los vehículos filtrados
             for i, car in enumerate(filtered_cars, 1):
                 result += f"{i}. {car['marca']} {car['modelo']} ({car['año']})\n"
                 result += f"   💰 Precio: {car['precio']}\n"
@@ -576,7 +615,7 @@ Remember: Respond with ONLY the JSON object containing the translated text, no a
                 result += f"   ⚡ Motor: {car['motor']} - {car['potencia']}\n"
                 result += f"   📊 Kilometraje: {car['km']}\n\n"
             
-            # Información adicional mejorada
+            # Información del filtrado aplicado
             total_vehicles = len(filtered_cars)
             if total_vehicles == 1:
                 result += f"✅ Este es el único vehículo que coincide con tu búsqueda.\n\n"
@@ -586,8 +625,16 @@ Remember: Respond with ONLY the JSON object containing the translated text, no a
             result += "💡 Para información completa de cualquier vehículo, pregúntame por el modelo específico.\n"
             result += "📅 ¿Te gustaría programar una cita para verlos en persona?"
             return result
+            
         else:
-            return "No encontré vehículos con esas características específicas, pero tengo otras opciones excelentes. ¿Quieres ver todo nuestro inventario disponible?"
+            # RESPUESTA ESPECÍFICA CUANDO NO HAY RESULTADOS
+            if applied_filters:
+                # Sabemos exactamente qué filtros se aplicaron y no dieron resultados
+                filter_text = ", ".join(applied_filters)
+                return f"❌ Lo siento, actualmente no tenemos vehículos con las características que buscas ({filter_text}).\n\n🚗 Nuestro inventario actual incluye vehículos de gasolina de marcas como BMW, Mercedes-Benz, Audi, Volkswagen, SEAT y Ford.\n\n¿Te gustaría ver alguna de estas opciones disponibles? ¿O prefieres que te notifique cuando tengamos vehículos que coincidan con tu búsqueda?"
+            else:
+                # Búsqueda general sin filtros específicos detectados
+                return "No encontré vehículos con esas características específicas, pero tengo otras opciones excelentes. ¿Quieres ver todo nuestro inventario disponible?"
     
     def schedule_appointment(self, details: str) -> str:
         """Simula programación de cita"""

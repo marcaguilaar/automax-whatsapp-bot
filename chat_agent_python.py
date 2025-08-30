@@ -28,46 +28,53 @@ class CarDealershipChatAgent:
         
         self.conversation_histories = {}  # Historial por usuario
         
-        # Configuración del sistema
+        # Sistema de mensajes bilingües con detección automática
         self.system_message = {
             "role": "system",
-            "content": """Eres un asistente virtual de AutoMax, un concesionario de automóviles premium. Tu trabajo es ayudar a los clientes a encontrar el vehículo perfecto para sus necesidades.
+            "content": """You are a virtual assistant for AutoMax, a premium car dealership. Your job is to help customers find the perfect vehicle for their needs.
 
-PERSONALIDAD:
-- Profesional pero amigable
-- Entusiasta sobre los automóviles
-- Conocedor del producto
-- Orientado al servicio al cliente
+IMPORTANT: ALWAYS respond in the SAME LANGUAGE the customer writes to you. If they write in Spanish, respond in Spanish. If they write in English, respond in English.
 
-INFORMACIÓN DEL INVENTARIO:
-- Tenemos vehículos nuevos y usados
-- Marcas disponibles: BMW, Mercedes-Benz, Audi, Volkswagen, SEAT, Ford
-- Tipos: sedanes, SUVs, hatchbacks, deportivos
-- Rangos de precio: desde €15,000 hasta €80,000
-- Financiamiento disponible
+PERSONALITY:
+- Professional but friendly
+- Enthusiastic about automobiles
+- Knowledgeable about products
+- Customer service oriented
 
-SERVICIOS:
-- Venta de vehículos nuevos y usados
-- Financiamiento y leasing
-- Intercambio de vehículos (trade-in)
-- Servicio postventa y mantenimiento
-- Pruebas de manejo programadas
+INVENTORY INFORMATION:
+- We have new and used vehicles
+- Available brands: BMW, Mercedes-Benz, Audi, Volkswagen, SEAT, Ford
+- Types: sedans, SUVs, hatchbacks, sports cars
+- Price ranges: from €15,000 to €80,000
+- Financing available
 
-FUNCIONES DISPONIBLES:
-1. Búsqueda de inventario por tipo, marca, precio, color
-2. Programar citas para pruebas de manejo
-3. Información sobre financiamiento
-4. Detalles específicos de vehículos
+SERVICES:
+- New and used vehicle sales
+- Financing and leasing
+- Vehicle trade-ins
+- After-sales service and maintenance
+- Scheduled test drives
 
-INSTRUCCIONES:
-- Siempre saluda calurosamente
-- Haz preguntas para entender las necesidades del cliente
-- Recomienda vehículos específicos cuando sea apropiado
-- Ofrece programar citas para pruebas de manejo
-- Mantén un tono profesional pero personal
-- Usa emojis apropiados (🚗, 🔧, 📅, etc.)
+AVAILABLE FUNCTIONS:
+1. Inventory search by type, brand, price, color
+2. Schedule test drive appointments
+3. Financing information
+4. Specific vehicle details
 
-Responde siempre en español y sé específico sobre nuestros servicios."""
+INSTRUCTIONS:
+- Always greet warmly in the customer's language
+- Ask questions to understand customer needs
+- Recommend specific vehicles when appropriate
+- Offer to schedule test drive appointments
+- Maintain a professional but personal tone
+- Use appropriate emojis (🚗, 🔧, 📅, etc.)
+- Adapt your response language to match the customer's language
+
+LANGUAGE EXAMPLES:
+- If customer says "hola" or "tenéis coches azules", respond in Spanish
+- If customer says "hello" or "do you have blue cars", respond in English
+
+Be specific about our services and always match the customer's language naturally."""
         }
     
     def get_conversation_history(self, user_id: str) -> List[Dict[str, str]]:
@@ -175,20 +182,40 @@ Horarios disponibles:
             history = self.get_conversation_history(user_id)
             messages.extend(history)
             
-            # Verificar si necesita búsqueda de inventario
+            # Verificar si necesita búsqueda de inventario (bilingüe)
             message_lower = user_message.lower()
-            search_keywords = ["coche", "auto", "vehículo", "disponible", "inventario", "busco", "color", "azul", "rojo", "suv", "sedán", "bmw", "mercedes", "audi"]
+            search_keywords = [
+                # Español
+                "coche", "auto", "vehículo", "disponible", "inventario", "busco", "color", 
+                "azul", "rojo", "suv", "sedán", "bmw", "mercedes", "audi", "teneis", "hay",
+                # English
+                "car", "vehicle", "available", "inventory", "looking", "search", "color",
+                "blue", "red", "sedan", "do you have", "show me"
+            ]
             
             if any(keyword in message_lower for keyword in search_keywords):
                 inventory_result = self.search_inventory(user_message)
-                context_message = f"Basándote en esta búsqueda de inventario: {inventory_result}"
+                # Detectar idioma del usuario para el contexto
+                if any(eng_word in message_lower for eng_word in ["car", "vehicle", "blue", "red", "do you have", "looking"]):
+                    context_message = f"Based on this inventory search: {inventory_result}"
+                else:
+                    context_message = f"Basándote en esta búsqueda de inventario: {inventory_result}"
                 messages.append({"role": "system", "content": context_message})
             
-            # Verificar si quiere programar cita
-            appointment_keywords = ["cita", "prueba", "probar", "conducir", "visitar", "ver"]
+            # Verificar si quiere programar cita (bilingüe)
+            appointment_keywords = [
+                # Español
+                "cita", "prueba", "probar", "conducir", "visitar", "ver", "programar",
+                # English
+                "appointment", "test", "drive", "visit", "see", "schedule", "book"
+            ]
             if any(keyword in message_lower for keyword in appointment_keywords):
                 appointment_info = self.schedule_appointment(user_message)
-                context_message = f"Información para programar cita: {appointment_info}"
+                # Detectar idioma del usuario para el contexto
+                if any(eng_word in message_lower for eng_word in ["appointment", "test", "drive", "visit", "schedule", "book"]):
+                    context_message = f"Appointment scheduling information: {appointment_info}"
+                else:
+                    context_message = f"Información para programar cita: {appointment_info}"
                 messages.append({"role": "system", "content": context_message})
             
             # Llamar a OpenAI
@@ -214,11 +241,19 @@ Horarios disponibles:
                     assistant_response = response.choices[0].message.content.strip()
             except Exception as e:
                 print(f"❌ Error en llamada OpenAI: {e}")
-                # Respuesta de fallback inteligente
-                if any(keyword in message_lower for keyword in ["azul", "coche", "auto"]):
-                    assistant_response = "🚗 ¡Excelente elección! Tenemos varios vehículos azules disponibles:\n\n• BMW Serie 3 (2023) - Color azul, €40,000\n• SEAT León (2023) - Color azul, €25,000\n\n¿Te interesa conocer más detalles de alguno? ¿Quieres programar una prueba de manejo? 📅"
+                # Respuesta de fallback inteligente bilingüe
+                if any(eng_word in message_lower for eng_word in ["hello", "hi", "car", "blue", "red", "do you have"]):
+                    # Respuesta en inglés
+                    if any(keyword in message_lower for keyword in ["blue", "car", "vehicle"]):
+                        assistant_response = "🚗 Excellent choice! We have several blue vehicles available:\n\n• BMW 3 Series (2023) - Blue color, €40,000\n• SEAT León (2023) - Blue color, €25,000\n\nAre you interested in learning more details about any of them? Would you like to schedule a test drive? 📅"
+                    else:
+                        assistant_response = "Hello! 👋 Welcome to AutoMax, your trusted dealership. 🚗 I'm here to help you find the perfect car. How can I help you today?"
                 else:
-                    assistant_response = "¡Hola! 👋 Bienvenido a AutoMax, tu concesionario de confianza. 🚗 Estoy aquí para ayudarte a encontrar el auto perfecto. ¿En qué puedo ayudarte hoy?"
+                    # Respuesta en español
+                    if any(keyword in message_lower for keyword in ["azul", "coche", "auto"]):
+                        assistant_response = "🚗 ¡Excelente elección! Tenemos varios vehículos azules disponibles:\n\n• BMW Serie 3 (2023) - Color azul, €40,000\n• SEAT León (2023) - Color azul, €25,000\n\n¿Te interesa conocer más detalles de alguno? ¿Quieres programar una prueba de manejo? 📅"
+                    else:
+                        assistant_response = "¡Hola! 👋 Bienvenido a AutoMax, tu concesionario de confianza. 🚗 Estoy aquí para ayudarte a encontrar el auto perfecto. ¿En qué puedo ayudarte hoy?"
             
             # Añadir respuesta al historial
             self.add_to_history(user_id, "assistant", assistant_response)

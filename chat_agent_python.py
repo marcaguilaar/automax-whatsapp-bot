@@ -31,50 +31,59 @@ class CarDealershipChatAgent:
         # Sistema de mensajes bilingües con detección automática
         self.system_message = {
             "role": "system",
-            "content": """You are a virtual assistant for AutoMax, a premium car dealership. Your job is to help customers find the perfect vehicle for their needs.
+            "content": """You are a virtual assistant for AutoMax, a premium car dealership. Your job is to help customers with vehicle information and in-person appointments.
 
 IMPORTANT: ALWAYS respond in the SAME LANGUAGE the customer writes to you. If they write in Spanish, respond in Spanish. If they write in English, respond in English.
 
-PERSONALITY:
-- Professional but friendly
-- Enthusiastic about automobiles
-- Knowledgeable about products
-- Customer service oriented
+AVAILABLE SERVICES:
+1. Vehicle Consultation: Show available cars with detailed specifications
+2. Detailed Vehicle Information: Complete details for each specific vehicle
+3. In-Person Appointments: Schedule visits to the dealership (NOT test drives)
+4. Company Information: Details about AutoMax dealership
 
 INVENTORY INFORMATION:
-- We have new and used vehicles
-- Available brands: BMW, Mercedes-Benz, Audi, Volkswagen, SEAT, Ford
+- New and used vehicles available
+- Brands: BMW, Mercedes-Benz, Audi, Volkswagen, SEAT, Ford
 - Types: sedans, SUVs, hatchbacks, sports cars
-- Price ranges: from €15,000 to €80,000
-- Financing available
+- Price range: €15,000 to €80,000
+- All vehicles come with warranty and after-sales service
 
-SERVICES:
-- New and used vehicle sales
-- Financing and leasing
-- Vehicle trade-ins
-- After-sales service and maintenance
-- Scheduled test drives
+COMPANY INFO - AutoMax:
+- Premium car dealership established in 2010
+- Located in Madrid, Spain
+- Specializes in European luxury and reliable vehicles
+- Expert sales team with 10+ years experience
+- Full after-sales service and maintenance
+- Customer satisfaction guarantee
+- Operating hours: Mon-Fri 9:00-18:00, Sat 9:00-14:00
 
-AVAILABLE FUNCTIONS:
-1. Inventory search by type, brand, price, color
-2. Schedule test drive appointments
-3. Financing information
-4. Specific vehicle details
+WHAT YOU CAN DO:
+✅ Search vehicles by brand, type, color, price range
+✅ Provide complete vehicle specifications and features
+✅ Schedule in-person appointments to visit the dealership
+✅ Share company information and services
+✅ Answer questions about vehicle availability
+
+WHAT YOU CANNOT DO:
+❌ NO financing or budget calculations
+❌ NO test drive scheduling (only in-person visits)
+❌ NO price negotiations or quotes
+❌ NO loan or payment plans
 
 INSTRUCTIONS:
 - Always greet warmly in the customer's language
-- Ask questions to understand customer needs
-- Recommend specific vehicles when appropriate
-- Offer to schedule test drive appointments
-- Maintain a professional but personal tone
-- Use appropriate emojis (🚗, 🔧, 📅, etc.)
-- Adapt your response language to match the customer's language
+- Focus on vehicle consultation and appointment scheduling
+- Provide detailed, accurate vehicle information
+- Be enthusiastic about our car selection
+- Guide customers toward scheduling in-person visits
+- Use emojis appropriately (🚗, �, 🏢, etc.)
+- Keep responses focused on the 4 main services
 
 LANGUAGE EXAMPLES:
-- If customer says "hola" or "tenéis coches azules", respond in Spanish
-- If customer says "hello" or "do you have blue cars", respond in English
+- Spanish: "hola, tenéis BMW disponibles?" → Respond in Spanish
+- English: "hello, do you have BMW cars?" → Respond in English
 
-Be specific about our services and always match the customer's language naturally."""
+Always be helpful and guide customers to visit our dealership for personalized service."""
         }
     
     def get_conversation_history(self, user_id: str) -> List[Dict[str, str]]:
@@ -96,61 +105,263 @@ Be specific about our services and always match the customer's language naturall
             # Mantener el mensaje del sistema y los últimos 19 mensajes
             self.conversation_histories[user_id] = self.conversation_histories[user_id][-19:]
     
-    def search_inventory(self, query: str) -> str:
-        """Simula búsqueda en inventario"""
-        query_lower = query.lower()
+    def get_vehicle_details(self, vehicle_id: str) -> str:
+        """Obtiene información completa de un vehículo específico"""
+        cars = {
+            "BMW_X3_2023_BLU": {
+                "marca": "BMW", "modelo": "X3", "año": 2023, 
+                "precio": "€45,000", "color": "azul metalizado", "tipo": "SUV",
+                "motor": "2.0L TwinPower Turbo de 4 cilindros",
+                "combustible": "Gasolina", "transmision": "Automática Steptronic de 8 velocidades",
+                "km": "0 km (vehículo nuevo)", "potencia": "184 CV (135 kW)",
+                "consumo": "7.2L/100km (mixto)", "emisiones": "164 g/km CO2",
+                "traccion": "Tracción total xDrive",
+                "caracteristicas": [
+                    "Sistema de navegación BMW Live Cockpit Professional",
+                    "Asientos de cuero Dakota con calefacción",
+                    "Sensor de aparcamiento delantero y trasero",
+                    "Control automático de climatización de 3 zonas",
+                    "Faros LED adaptativos",
+                    "Portón trasero eléctrico"
+                ],
+                "dimensiones": "4.71m x 1.89m x 1.68m",
+                "capacidad_maletero": "550 litros",
+                "garantia": "2 años garantía de fábrica + 3 años BMW Service Inclusive"
+            }
+        }
         
-        # Inventario simulado
-        cars = [
-            {"marca": "BMW", "modelo": "X3", "año": 2023, "precio": "€45,000", "color": "azul", "tipo": "SUV"},
-            {"marca": "Mercedes-Benz", "modelo": "C-Class", "año": 2023, "precio": "€42,000", "color": "negro", "tipo": "sedán"},
-            {"marca": "Audi", "modelo": "A4", "año": 2022, "precio": "€38,000", "color": "blanco", "tipo": "sedán"},
-            {"marca": "BMW", "modelo": "Serie 3", "año": 2023, "precio": "€40,000", "color": "azul", "tipo": "sedán"},
-            {"marca": "Volkswagen", "modelo": "Tiguan", "año": 2022, "precio": "€32,000", "color": "rojo", "tipo": "SUV"},
-            {"marca": "SEAT", "modelo": "León", "año": 2023, "precio": "€25,000", "color": "azul", "tipo": "hatchback"},
-            {"marca": "Ford", "modelo": "Mustang", "año": 2023, "precio": "€55,000", "color": "rojo", "tipo": "deportivo"},
-        ]
-        
-        # Filtrar por color si se menciona
-        if "azul" in query_lower:
-            cars = [car for car in cars if car["color"] == "azul"]
-        elif "rojo" in query_lower:
-            cars = [car for car in cars if car["color"] == "rojo"]
-        elif "negro" in query_lower:
-            cars = [car for car in cars if car["color"] == "negro"]
-        elif "blanco" in query_lower:
-            cars = [car for car in cars if car["color"] == "blanco"]
-        
-        # Filtrar por tipo
-        if "suv" in query_lower:
-            cars = [car for car in cars if car["tipo"] == "SUV"]
-        elif "sedan" in query_lower or "sedán" in query_lower:
-            cars = [car for car in cars if car["tipo"] == "sedán"]
-        elif "deportivo" in query_lower:
-            cars = [car for car in cars if car["tipo"] == "deportivo"]
-        
-        # Filtrar por marca
-        if "bmw" in query_lower:
-            cars = [car for car in cars if car["marca"] == "BMW"]
-        elif "mercedes" in query_lower:
-            cars = [car for car in cars if car["marca"] == "Mercedes-Benz"]
-        elif "audi" in query_lower:
-            cars = [car for car in cars if car["marca"] == "Audi"]
-        
-        if cars:
-            result = "🚗 Vehículos encontrados:\n\n"
-            for car in cars[:3]:  # Mostrar máximo 3
-                result += f"• {car['marca']} {car['modelo']} ({car['año']})\n"
-                result += f"  Color: {car['color']} | Tipo: {car['tipo']}\n"
-                result += f"  Precio: {car['precio']}\n\n"
+        if vehicle_id in cars:
+            car = cars[vehicle_id]
+            result = f"🚗 **{car['marca']} {car['modelo']} {car['año']}**\n\n"
+            result += f"💰 **Precio:** {car['precio']}\n"
+            result += f"🎨 **Color:** {car['color']}\n"
+            result += f"📊 **Kilometraje:** {car['km']}\n\n"
             
-            if len(cars) > 3:
-                result += f"... y {len(cars) - 3} vehículos más disponibles.\n\n"
-                
-            result += "¿Te interesa alguno? ¿Quieres que programemos una prueba de manejo? 📅"
+            result += "🔧 **Especificaciones Técnicas:**\n"
+            result += f"• Motor: {car['motor']}\n"
+            result += f"• Potencia: {car['potencia']}\n"
+            result += f"• Transmisión: {car['transmision']}\n"
+            result += f"• Tracción: {car['traccion']}\n"
+            result += f"• Consumo: {car['consumo']}\n"
+            result += f"• Emisiones: {car['emisiones']}\n\n"
+            
+            result += "📏 **Dimensiones:**\n"
+            result += f"• Exterior: {car['dimensiones']}\n"
+            result += f"• Maletero: {car['capacidad_maletero']}\n\n"
+            
+            result += "✨ **Características destacadas:**\n"
+            for feature in car['caracteristicas']:
+                result += f"• {feature}\n"
+            
+            result += f"\n🛡️ **Garantía:** {car['garantia']}\n\n"
+            result += "📅 ¿Te gustaría agendar una cita para verlo en persona en nuestro concesionario?"
+            
             return result
         else:
-            return "No encontré vehículos exactos con esas características, pero tengo otras opciones que podrían interesarte. ¿Quieres que te muestre nuestro inventario completo?"
+            return "No encontré ese vehículo específico. ¿Puedes decirme qué modelo te interesa? Tengo información detallada de todos nuestros vehículos."
+
+    def schedule_appointment(self, details: str) -> str:
+        """Programa cita presencial en el concesionario"""
+        details_lower = details.lower()
+        
+        # Horarios disponibles
+        horarios = [
+            "Lunes a Viernes: 9:00 - 19:00",
+            "Sábados: 9:00 - 14:00", 
+            "Domingos: Cerrado"
+        ]
+        
+        servicios_cita = [
+            "Ver vehículos en persona",
+            "Consulta personalizada con nuestros asesores",
+            "Inspección detallada del vehículo",
+            "Documentación y trámites"
+        ]
+        
+        result = "📅 **Programar Cita Presencial**\n\n"
+        result += "🏢 **AutoMax - Concesionario Premium**\n"
+        result += "📍 Dirección: Av. Principal 123, Madrid\n\n"
+        
+        result += "🕐 **Horarios disponibles:**\n"
+        for horario in horarios:
+            result += f"• {horario}\n"
+        
+        result += "\n🎯 **¿Qué podemos hacer en tu cita?**\n"
+        for servicio in servicios_cita:
+            result += f"• {servicio}\n"
+        
+        result += "\n📞 **Para confirmar tu cita:**\n"
+        result += "• Teléfono: +34 91 XXX XX XX\n"
+        result += "• Email: citas@automax.es\n"
+        result += "• WhatsApp: Este mismo número\n\n"
+        
+        result += "💡 **Información para tu cita:**\n"
+        result += "• Trae tu DNI/NIE\n"
+        result += "• Si tienes vehículo para tasación, trae documentación\n"
+        result += "• Duración aproximada: 30-60 minutos\n\n"
+        
+        result += "¿Qué día y hora te conviene mejor? Nuestros asesores están listos para atenderte."
+        
+        return result
+
+    def get_company_info(self, query: str = "") -> str:
+        """Información de la empresa AutoMax"""
+        query_lower = query.lower()
+        
+        if "direccion" in query_lower or "ubicacion" in query_lower:
+            return ("📍 **AutoMax - Ubicación**\n\n"
+                   "🏢 Dirección: Av. Principal 123, 28001 Madrid\n"
+                   "🚇 Metro: Línea 1 - Estación Centro (5 min caminando)\n"
+                   "🅿️ Aparcamiento gratuito disponible\n"
+                   "🚗 Fácil acceso desde M-30 y A-1\n\n"
+                   "¿Necesitas indicaciones específicas para llegar?")
+        
+        elif "horario" in query_lower or "hora" in query_lower:
+            return ("🕐 **AutoMax - Horarios de Atención**\n\n"
+                   "📅 Lunes a Viernes: 9:00 - 19:00\n"
+                   "📅 Sábados: 9:00 - 14:00\n"
+                   "📅 Domingos: Cerrado\n\n"
+                   "🎯 Servicio al cliente siempre disponible vía WhatsApp\n"
+                   "📞 Emergencias: +34 91 XXX XX XX")
+        
+        elif "contacto" in query_lower or "telefono" in query_lower:
+            return ("📞 **AutoMax - Contacto**\n\n"
+                   "📱 WhatsApp: Este mismo número\n"
+                   "☎️ Teléfono: +34 91 XXX XX XX\n"
+                   "📧 Email: info@automax.es\n"
+                   "📧 Citas: citas@automax.es\n"
+                   "🌐 Web: www.automax.es\n\n"
+                   "💬 ¿Prefieres que te contactemos por algún medio específico?")
+        
+        else:
+            return ("🏢 **AutoMax - Concesionario Premium**\n\n"
+                   "🎯 **Especialistas en vehículos de calidad**\n"
+                   "• Marcas premium: BMW, Mercedes-Benz, Audi, y más\n"
+                   "• Vehículos nuevos y seminuevos\n"
+                   "• Garantía en todos nuestros vehículos\n"
+                   "• Servicio postventa especializado\n\n"
+                   
+                   "📍 **Ubicación:** Av. Principal 123, Madrid\n"
+                   "🕐 **Horarios:** Lun-Vie 9-19h | Sáb 9-14h\n"
+                   "📞 **Contacto:** +34 91 XXX XX XX\n\n"
+                   
+                   "✨ **¿Por qué elegir AutoMax?**\n"
+                   "• +15 años de experiencia\n"
+                   "• Asesoramiento personalizado\n"
+                   "• Proceso transparente y honesto\n"
+                   "• Atención al cliente excepcional\n\n"
+                   
+                   "¿Qué más te gustaría saber sobre nosotros?")
+
+    def search_inventory(self, query: str) -> str:
+        """Búsqueda inteligente en inventario con información detallada"""
+        query_lower = query.lower()
+        
+        # Inventario detallado con especificaciones completas
+        cars = [
+            {
+                "id": "BMW_X3_2023_BLU", "marca": "BMW", "modelo": "X3", "año": 2023, 
+                "precio": "€45,000", "color": "azul metalizado", "tipo": "SUV",
+                "motor": "2.0L TwinPower Turbo", "combustible": "Gasolina", 
+                "transmision": "Automática 8 velocidades", "km": "0 km (nuevo)",
+                "potencia": "184 CV", "consumo": "7.2L/100km", 
+                "caracteristicas": ["Navegación BMW", "Asientos de cuero", "Tracción total xDrive"]
+            },
+            {
+                "id": "MERCEDES_C_2023_BLK", "marca": "Mercedes-Benz", "modelo": "C-Class", "año": 2023,
+                "precio": "€42,000", "color": "negro obsidiana", "tipo": "sedán", 
+                "motor": "1.5L Turbo", "combustible": "Gasolina", 
+                "transmision": "Automática 9G-TRONIC", "km": "0 km (nuevo)",
+                "potencia": "170 CV", "consumo": "6.8L/100km",
+                "caracteristicas": ["MBUX", "Asientos deportivos", "LED High Performance"]
+            },
+            {
+                "id": "AUDI_A4_2022_WHT", "marca": "Audi", "modelo": "A4", "año": 2022,
+                "precio": "€38,000", "color": "blanco glaciar", "tipo": "sedán",
+                "motor": "2.0L TFSI", "combustible": "Gasolina",
+                "transmision": "S tronic 7 velocidades", "km": "15,000 km",
+                "potencia": "190 CV", "consumo": "6.5L/100km", 
+                "caracteristicas": ["Virtual Cockpit", "quattro", "Bang & Olufsen"]
+            },
+            {
+                "id": "BMW_3_2023_BLU", "marca": "BMW", "modelo": "Serie 3", "año": 2023,
+                "precio": "€40,000", "color": "azul storm bay", "tipo": "sedán",
+                "motor": "2.0L TwinPower", "combustible": "Gasolina",
+                "transmision": "Automática Steptronic", "km": "0 km (nuevo)",
+                "potencia": "184 CV", "consumo": "6.9L/100km",
+                "caracteristicas": ["iDrive 7.0", "Harman Kardon", "Asientos deportivos"]
+            },
+            {
+                "id": "VW_TIGUAN_2022_RED", "marca": "Volkswagen", "modelo": "Tiguan", "año": 2022,
+                "precio": "€32,000", "color": "rojo tornado", "tipo": "SUV",
+                "motor": "1.5L TSI", "combustible": "Gasolina",
+                "transmision": "DSG automático", "km": "22,000 km",
+                "potencia": "150 CV", "consumo": "7.0L/100km",
+                "caracteristicas": ["Digital Cockpit", "4MOTION", "App-Connect"]
+            },
+            {
+                "id": "SEAT_LEON_2023_BLU", "marca": "SEAT", "modelo": "León", "año": 2023,
+                "precio": "€25,000", "color": "azul Desire", "tipo": "hatchback",
+                "motor": "1.5L TSI", "combustible": "Gasolina",
+                "transmision": "Manual 6 velocidades", "km": "0 km (nuevo)",
+                "potencia": "130 CV", "consumo": "5.8L/100km",
+                "caracteristicas": ["SEAT Connect", "Full LED", "Wireless Charger"]
+            },
+            {
+                "id": "FORD_MUSTANG_2023_RED", "marca": "Ford", "modelo": "Mustang", "año": 2023,
+                "precio": "€55,000", "color": "rojo racing", "tipo": "deportivo",
+                "motor": "5.0L V8", "combustible": "Gasolina",
+                "transmision": "Manual 6 velocidades", "km": "0 km (nuevo)",
+                "potencia": "450 CV", "consumo": "12.4L/100km",
+                "caracteristicas": ["SYNC 3", "Brembo", "Recaro asientos"]
+            }
+        ]
+        
+        # Filtros de búsqueda
+        filtered_cars = cars.copy()
+        
+        # Filtrar por color
+        colors = {"azul": "azul", "blue": "azul", "rojo": "rojo", "red": "rojo", 
+                 "negro": "negro", "black": "negro", "blanco": "blanco", "white": "blanco"}
+        for color_key, color_value in colors.items():
+            if color_key in query_lower:
+                filtered_cars = [car for car in filtered_cars if color_value in car["color"]]
+                break
+        
+        # Filtrar por tipo
+        types = {"suv": "SUV", "sedan": "sedán", "sedán": "sedán", "deportivo": "deportivo", 
+                "sports": "deportivo", "hatchback": "hatchback"}
+        for type_key, type_value in types.items():
+            if type_key in query_lower:
+                filtered_cars = [car for car in filtered_cars if car["tipo"] == type_value]
+                break
+        
+        # Filtrar por marca
+        brands = {"bmw": "BMW", "mercedes": "Mercedes-Benz", "audi": "Audi", 
+                 "volkswagen": "Volkswagen", "vw": "Volkswagen", "seat": "SEAT", "ford": "Ford"}
+        for brand_key, brand_value in brands.items():
+            if brand_key in query_lower:
+                filtered_cars = [car for car in filtered_cars if car["marca"] == brand_value]
+                break
+        
+        # Mostrar resultados
+        if filtered_cars:
+            result = "🚗 Vehículos disponibles:\n\n"
+            for i, car in enumerate(filtered_cars[:3], 1):  # Máximo 3 resultados
+                result += f"{i}. {car['marca']} {car['modelo']} ({car['año']})\n"
+                result += f"   💰 Precio: {car['precio']}\n"
+                result += f"   🎨 Color: {car['color']}\n"
+                result += f"   ⚡ Motor: {car['motor']} - {car['potencia']}\n"
+                result += f"   📊 Kilometraje: {car['km']}\n\n"
+            
+            if len(filtered_cars) > 3:
+                result += f"... y {len(filtered_cars) - 3} vehículos más disponibles.\n\n"
+            
+            result += "💡 Para información completa de cualquier vehículo, pregúntame por el modelo específico.\n"
+            result += "📅 ¿Te gustaría programar una cita para verlos en persona?"
+            return result
+        else:
+            return "No encontré vehículos con esas características específicas, pero tengo otras opciones excelentes. ¿Quieres ver todo nuestro inventario disponible?"
     
     def schedule_appointment(self, details: str) -> str:
         """Simula programación de cita"""
@@ -182,43 +393,61 @@ Horarios disponibles:
             history = self.get_conversation_history(user_id)
             messages.extend(history)
             
-            # Verificar si necesita búsqueda de inventario (bilingüe)
+            # Verificar funciones específicas (respuesta directa sin llamar a OpenAI)
             message_lower = user_message.lower()
+            
+            # Función específica: Búsqueda de inventario
             search_keywords = [
-                # Español
                 "coche", "auto", "vehículo", "disponible", "inventario", "busco", "color", 
                 "azul", "rojo", "suv", "sedán", "bmw", "mercedes", "audi", "teneis", "hay",
-                # English
                 "car", "vehicle", "available", "inventory", "looking", "search", "color",
                 "blue", "red", "sedan", "do you have", "show me"
             ]
             
             if any(keyword in message_lower for keyword in search_keywords):
                 inventory_result = self.search_inventory(user_message)
-                # Detectar idioma del usuario para el contexto
-                if any(eng_word in message_lower for eng_word in ["car", "vehicle", "blue", "red", "do you have", "looking"]):
-                    context_message = f"Based on this inventory search: {inventory_result}"
-                else:
-                    context_message = f"Basándote en esta búsqueda de inventario: {inventory_result}"
-                messages.append({"role": "system", "content": context_message})
+                self.add_to_history(user_id, "assistant", inventory_result)
+                return inventory_result
             
-            # Verificar si quiere programar cita (bilingüe)
-            appointment_keywords = [
-                # Español
-                "cita", "prueba", "probar", "conducir", "visitar", "ver", "programar",
-                # English
-                "appointment", "test", "drive", "visit", "see", "schedule", "book"
+            # Función específica: Detalles de vehículo
+            detail_keywords = [
+                "detalles", "especificaciones", "información completa", "características",
+                "motor", "potencia", "consumo", "dimensiones", "garantía", "completa",
+                "details", "specifications", "complete information", "features",
+                "engine", "power", "consumption", "dimensions", "warranty", "complete"
             ]
-            if any(keyword in message_lower for keyword in appointment_keywords):
-                appointment_info = self.schedule_appointment(user_message)
-                # Detectar idioma del usuario para el contexto
-                if any(eng_word in message_lower for eng_word in ["appointment", "test", "drive", "visit", "schedule", "book"]):
-                    context_message = f"Appointment scheduling information: {appointment_info}"
-                else:
-                    context_message = f"Información para programar cita: {appointment_info}"
-                messages.append({"role": "system", "content": context_message})
             
-            # Llamar a OpenAI
+            if any(keyword in message_lower for keyword in detail_keywords):
+                vehicle_details = self.get_vehicle_details("BMW_X3_2023_BLU")
+                self.add_to_history(user_id, "assistant", vehicle_details)
+                return vehicle_details
+            
+            # Función específica: Programar cita presencial (NO pruebas de manejo)
+            appointment_keywords = [
+                "cita", "visita", "ver", "programar", "concesionario", "presencial", "agendar",
+                "appointment", "visit", "see", "schedule", "dealership", "in-person", "book"
+            ]
+            
+            if any(keyword in message_lower for keyword in appointment_keywords):
+                # Excluir pruebas de manejo
+                if not any(test_word in message_lower for test_word in ["prueba", "probar", "conducir", "test", "drive", "driving"]):
+                    appointment_info = self.schedule_appointment(user_message)
+                    self.add_to_history(user_id, "assistant", appointment_info)
+                    return appointment_info
+            
+            # Función específica: Información de empresa
+            company_keywords = [
+                "empresa", "automax", "dirección", "ubicación", "horario", "contacto", "teléfono",
+                "company", "automax", "address", "location", "hours", "contact", "phone"
+            ]
+            
+            if any(keyword in message_lower for keyword in company_keywords):
+                company_info = self.get_company_info(user_message)
+                self.add_to_history(user_id, "assistant", company_info)
+                return company_info
+            
+            # Si no es función específica, usar IA con mensajes contextuales
+            # Llamar a OpenAI para conversación general
             try:
                 if self.client:
                     # Usar nuevo cliente

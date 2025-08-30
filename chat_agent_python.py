@@ -307,6 +307,59 @@ Remember: Respond with ONLY the JSON object containing the translated text, no a
             print(f"❌ Error en traducción a {target_language}: {e}")
             return response_text  # Devolver original si hay error
     
+    def detect_specific_vehicle(self, query: str) -> str:
+        """Detecta qué vehículo específico quiere el usuario"""
+        query_lower = query.lower()
+        
+        # Mapeo de palabras clave a IDs de vehículos
+        vehicle_mapping = {
+            # Por modelo específico
+            "x3": "BMW_X3_2023_BLU",
+            "bmw x3": "BMW_X3_2023_BLU",
+            "serie 3": "BMW_3_2023_BLU", 
+            "bmw serie 3": "BMW_3_2023_BLU",
+            "c-class": "MERCEDES_C_2023_BLK",
+            "mercedes": "MERCEDES_C_2023_BLK",
+            "a4": "AUDI_A4_2022_WHT",
+            "audi": "AUDI_A4_2022_WHT",
+            "tiguan": "VW_TIGUAN_2022_RED",
+            "volkswagen": "VW_TIGUAN_2022_RED",
+            "león": "SEAT_LEON_2023_BLU",
+            "leon": "SEAT_LEON_2023_BLU",
+            "seat": "SEAT_LEON_2023_BLU",
+            "mustang": "FORD_MUSTANG_2023_RED",
+            "ford": "FORD_MUSTANG_2023_RED",
+            
+            # Por características especiales
+            "más barato": "SEAT_LEON_2023_BLU",
+            "mas barato": "SEAT_LEON_2023_BLU", 
+            "barato": "SEAT_LEON_2023_BLU",
+            "económico": "SEAT_LEON_2023_BLU",
+            "cheapest": "SEAT_LEON_2023_BLU",
+            
+            "más caro": "FORD_MUSTANG_2023_RED",
+            "mas caro": "FORD_MUSTANG_2023_RED",
+            "caro": "FORD_MUSTANG_2023_RED", 
+            "expensive": "FORD_MUSTANG_2023_RED",
+            
+            "deportivo": "FORD_MUSTANG_2023_RED",
+            "sports": "FORD_MUSTANG_2023_RED",
+            
+            # Por color
+            "azul": "BMW_X3_2023_BLU",  # Primer azul disponible
+            "rojo": "VW_TIGUAN_2022_RED",  # Primer rojo disponible
+            "negro": "MERCEDES_C_2023_BLK",
+            "blanco": "AUDI_A4_2022_WHT"
+        }
+        
+        # Buscar coincidencias en el query
+        for keyword, vehicle_id in vehicle_mapping.items():
+            if keyword in query_lower:
+                return vehicle_id
+        
+        # Si no encuentra nada específico, devolver el más popular (BMW X3)
+        return "BMW_X3_2023_BLU"
+
     def get_vehicle_details(self, vehicle_id: str) -> str:
         """Obtiene información completa de un vehículo específico"""
         cars = {
@@ -329,6 +382,44 @@ Remember: Respond with ONLY the JSON object containing the translated text, no a
                 "dimensiones": "4.71m x 1.89m x 1.68m",
                 "capacidad_maletero": "550 litros",
                 "garantia": "2 años garantía de fábrica + 3 años BMW Service Inclusive"
+            },
+            "BMW_3_2023_BLU": {
+                "marca": "BMW", "modelo": "Serie 3", "año": 2023,
+                "precio": "€40,000", "color": "azul storm bay", "tipo": "sedán",
+                "motor": "2.0L TwinPower Turbo de 4 cilindros",
+                "combustible": "Gasolina", "transmision": "Automática Steptronic",
+                "km": "0 km (vehículo nuevo)", "potencia": "184 CV",
+                "consumo": "6.9L/100km", "emisiones": "158 g/km CO2",
+                "traccion": "Tracción trasera",
+                "caracteristicas": [
+                    "Sistema iDrive 7.0 con pantalla táctil",
+                    "Harman Kardon sistema de sonido premium",
+                    "Asientos deportivos con ajuste eléctrico",
+                    "Conectividad BMW ConnectedDrive",
+                    "Control de crucero adaptativo"
+                ],
+                "dimensiones": "4.71m x 1.83m x 1.44m",
+                "capacidad_maletero": "480 litros",
+                "garantia": "2 años garantía de fábrica + 3 años BMW Service Inclusive"
+            },
+            "SEAT_LEON_2023_BLU": {
+                "marca": "SEAT", "modelo": "León", "año": 2023,
+                "precio": "€25,000", "color": "azul Desire", "tipo": "hatchback",
+                "motor": "1.5L TSI de 4 cilindros",
+                "combustible": "Gasolina", "transmision": "Manual 6 velocidades",
+                "km": "0 km (vehículo nuevo)", "potencia": "130 CV",
+                "consumo": "5.8L/100km", "emisiones": "132 g/km CO2",
+                "traccion": "Tracción delantera",
+                "caracteristicas": [
+                    "SEAT Connect con conectividad total",
+                    "Faros Full LED de serie",
+                    "Cargador inalámbrico para smartphone",
+                    "Control de crucero",
+                    "Sistema de infoentretenimiento de 8.25 pulgadas"
+                ],
+                "dimensiones": "4.37m x 1.80m x 1.46m",
+                "capacidad_maletero": "380 litros",
+                "garantia": "2 años garantía de fábrica"
             }
         }
         
@@ -557,6 +648,17 @@ Remember: Respond with ONLY the JSON object containing the translated text, no a
                 if len(filtered_cars) != original_count:
                     break
         
+        # Filtrar por PRECIO (nuevo filtro para "barato", "más barato", etc.)
+        price_keywords = [
+            "barato", "más barato", "menos caro", "económico", "presupuesto",
+            "cheap", "cheaper", "affordable", "budget", "less expensive"
+        ]
+        
+        if any(keyword in query_lower for keyword in price_keywords):
+            # Ordenar por precio y mostrar los más baratos primero
+            filtered_cars = sorted(filtered_cars, key=lambda x: int(x["precio"].replace("€", "").replace(",", "")))
+            applied_filters.append("ordenado por precio: más barato primero")
+        
         # Filtrar por color (mejorado)
         colors = {
             "azul": "azul", "blue": "azul", "bleu": "azul",
@@ -673,25 +775,30 @@ Horarios disponibles:
             message_lower = user_message.lower()
             response_text = None
             
-            # Función específica: Búsqueda de inventario
+            # Función específica: Búsqueda de inventario (incluyendo precio)
             search_keywords = [
                 "coche", "auto", "vehículo", "disponible", "inventario", "busco", "color", 
                 "azul", "rojo", "suv", "sedán", "bmw", "mercedes", "audi", "teneis", "hay",
+                "barato", "económico", "precio", "más barato", "menos caro", "presupuesto",
+                "info del", "información del", "cual es el", "qué", "que",
                 "car", "vehicle", "available", "inventory", "looking", "search", "color",
-                "blue", "red", "sedan", "do you have", "show me"
+                "blue", "red", "sedan", "do you have", "show me", "cheap", "affordable", "budget",
+                "info about", "information about", "which is the", "what"
             ]
             
             if any(keyword in message_lower for keyword in search_keywords):
                 response_text = self.search_inventory(user_message)
             
-            # Función específica: Detalles de vehículo
+            # Función específica: Detalles de vehículo ESPECÍFICO
             elif any(keyword in message_lower for keyword in [
                 "detalles", "especificaciones", "información completa", "características",
                 "motor", "potencia", "consumo", "dimensiones", "garantía", "completa",
                 "details", "specifications", "complete information", "features",
                 "engine", "power", "consumption", "dimensions", "warranty", "complete"
             ]):
-                response_text = self.get_vehicle_details("BMW_X3_2023_BLU")
+                # Determinar qué vehículo específico quiere
+                vehicle_id = self.detect_specific_vehicle(user_message)
+                response_text = self.get_vehicle_details(vehicle_id)
             
             # Función específica: Programar cita presencial (NO pruebas de manejo)
             elif any(keyword in message_lower for keyword in [

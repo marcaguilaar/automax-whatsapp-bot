@@ -753,6 +753,94 @@ Horarios disponibles:
 
 ¿Qué día te viene mejor? 🚗"""
     
+    def interpret_user_intent(self, user_message: str, messages: List[Dict[str, str]]) -> str:
+        """
+        Usa GPT para interpretar la intención del usuario y llamar la función apropiada
+        """
+        try:
+            # Crear prompt para determinar la intención
+            intent_prompt = {
+                "role": "system",
+                "content": """Eres un asistente especializado en determinar la intención del usuario en un concesionario de autos.
+
+Analiza el mensaje del usuario y determina cuál de estas 5 acciones debe ejecutarse:
+
+1. SEARCH_INVENTORY - Búsqueda general de vehículos (por marca, color, tipo, precio, disponibilidad)
+   Ejemplos: "¿qué coches tenéis?", "coches azules", "BMW disponibles", "algo barato"
+
+2. VEHICLE_DETAILS - Información específica y detallada de UN vehículo concreto
+   Ejemplos: "más información del BMW X3", "especificaciones del Serie 3", "detalles completos del Mercedes"
+
+3. SCHEDULE_APPOINTMENT - Programar cita para visitar el concesionario (NO test drives)
+   Ejemplos: "quiero hacer una cita", "visitar el concesionario", "ver los coches en persona"
+
+4. COMPANY_INFO - Información sobre AutoMax (horarios, ubicación, contacto)
+   Ejemplos: "dónde estáis", "vuestros horarios", "teléfono de AutoMax"
+
+5. GENERAL_CHAT - Conversación general, saludos, o consultas que no requieren función específica
+   Ejemplos: "hola", "gracias", "qué tal", preguntas sobre financiación/test drives (que no ofrecemos)
+
+Responde SOLO con una de estas opciones: SEARCH_INVENTORY, VEHICLE_DETAILS, SCHEDULE_APPOINTMENT, COMPANY_INFO, o GENERAL_CHAT
+
+Si el usuario pide información específica de un modelo concreto (como "más información del BMW X3"), es VEHICLE_DETAILS.
+Si busca opciones generales (como "¿qué BMW tenéis?"), es SEARCH_INVENTORY."""
+            }
+            
+            if self.client:
+                # Determinar intención
+                intent_response = self.client.chat.completions.create(
+                    model="gpt-3.5-turbo",
+                    messages=[
+                        intent_prompt,
+                        {"role": "user", "content": user_message}
+                    ],
+                    max_tokens=20,
+                    temperature=0
+                )
+                
+                intent = intent_response.choices[0].message.content.strip()
+                print(f"🎯 Intención detectada: {intent}")
+                
+                # Ejecutar la función apropiada basándose en la intención
+                if intent == "SEARCH_INVENTORY":
+                    return self.search_inventory(user_message)
+                elif intent == "VEHICLE_DETAILS":
+                    vehicle_id = self.detect_specific_vehicle(user_message)
+                    return self.get_vehicle_details(vehicle_id)
+                elif intent == "SCHEDULE_APPOINTMENT":
+                    return self.schedule_appointment(user_message)
+                elif intent == "COMPANY_INFO":
+                    return self.get_company_info(user_message)
+                else:  # GENERAL_CHAT
+                    # Usar conversación normal con GPT
+                    response = self.client.chat.completions.create(
+                        model="gpt-4o-mini",
+                        messages=messages,
+                        max_tokens=500,
+                        temperature=0.7
+                    )
+                    return response.choices[0].message.content.strip()
+            else:
+                # Fallback sin cliente
+                return "¡Hola! 👋 Bienvenido a AutoMax. ¿En qué puedo ayudarte hoy?"
+                
+        except Exception as e:
+            print(f"❌ Error interpretando intención: {e}")
+            # Fallback a conversación general
+            try:
+                if self.client:
+                    response = self.client.chat.completions.create(
+                        model="gpt-4o-mini",
+                        messages=messages,
+                        max_tokens=500,
+                        temperature=0.7
+                    )
+                    return response.choices[0].message.content.strip()
+                else:
+                    return "¡Hola! 👋 Bienvenido a AutoMax. ¿En qué puedo ayudarte hoy?"
+            except:
+                return "¡Hola! 👋 Bienvenido a AutoMax. ¿En qué puedo ayudarte hoy?"
+    
     def get_response(self, user_message: str, user_id: str = "default") -> str:
         """
         Genera una respuesta del agente de chat con traducción automática
@@ -771,77 +859,8 @@ Horarios disponibles:
             history = self.get_conversation_history(user_id)
             messages.extend(history)
             
-            # Verificar funciones específicas (respuesta directa sin llamar a OpenAI)
-            message_lower = user_message.lower()
-            response_text = None
-            
-            # Función específica: Búsqueda de inventario (incluyendo precio)
-            search_keywords = [
-                "coche", "auto", "vehículo", "disponible", "inventario", "busco", "color", 
-                "azul", "rojo", "suv", "sedán", "bmw", "mercedes", "audi", "teneis", "hay",
-                "barato", "económico", "precio", "más barato", "menos caro", "presupuesto",
-                "info del", "información del", "cual es el", "qué", "que",
-                "car", "vehicle", "available", "inventory", "looking", "search", "color",
-                "blue", "red", "sedan", "do you have", "show me", "cheap", "affordable", "budget",
-                "info about", "information about", "which is the", "what"
-            ]
-            
-            if any(keyword in message_lower for keyword in search_keywords):
-                response_text = self.search_inventory(user_message)
-            
-            # Función específica: Detalles de vehículo ESPECÍFICO
-            elif any(keyword in message_lower for keyword in [
-                "detalles", "especificaciones", "información completa", "características",
-                "motor", "potencia", "consumo", "dimensiones", "garantía", "completa",
-                "details", "specifications", "complete information", "features",
-                "engine", "power", "consumption", "dimensions", "warranty", "complete"
-            ]):
-                # Determinar qué vehículo específico quiere
-                vehicle_id = self.detect_specific_vehicle(user_message)
-                response_text = self.get_vehicle_details(vehicle_id)
-            
-            # Función específica: Programar cita presencial (NO pruebas de manejo)
-            elif any(keyword in message_lower for keyword in [
-                "cita", "visita", "ver", "programar", "concesionario", "presencial", "agendar",
-                "appointment", "visit", "see", "schedule", "dealership", "in-person", "book"
-            ]):
-                # Excluir pruebas de manejo
-                if not any(test_word in message_lower for test_word in ["prueba", "probar", "conducir", "test", "drive", "driving"]):
-                    response_text = self.schedule_appointment(user_message)
-            
-            # Función específica: Información de empresa
-            elif any(keyword in message_lower for keyword in [
-                "empresa", "automax", "dirección", "ubicación", "horario", "contacto", "teléfono",
-                "company", "automax", "address", "location", "hours", "contact", "phone"
-            ]):
-                response_text = self.get_company_info(user_message)
-            
-            # Si no es función específica, usar IA
-            if response_text is None:
-                try:
-                    if self.client:
-                        # Usar nuevo cliente
-                        response = self.client.chat.completions.create(
-                            model="gpt-4o-mini",
-                            messages=messages,
-                            max_tokens=500,
-                            temperature=0.7
-                        )
-                        response_text = response.choices[0].message.content.strip()
-                    else:
-                        # Usar API antigua para compatibilidad
-                        import openai
-                        response = openai.ChatCompletion.create(
-                            model="gpt-4o-mini",
-                            messages=messages,
-                            max_tokens=500,
-                            temperature=0.7
-                        )
-                        response_text = response.choices[0].message.content.strip()
-                except Exception as e:
-                    print(f"❌ Error en llamada OpenAI: {e}")
-                    # Respuesta de fallback básica
-                    response_text = "¡Hola! 👋 Bienvenido a AutoMax, tu concesionario de confianza. 🚗 Estoy aquí para ayudarte a encontrar el auto perfecto. ¿En qué puedo ayudarte hoy?"
+            # Usar GPT para determinar la intención del usuario e invocar la función apropiada
+            response_text = self.interpret_user_intent(user_message, messages)
             
             # TRADUCIR AUTOMÁTICAMENTE LA RESPUESTA AL IDIOMA DEL USUARIO
             final_response = self.translate_response(response_text, user_language)

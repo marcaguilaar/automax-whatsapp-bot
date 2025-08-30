@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
+    "build": "./build.sh",
+    "start": "python whatsapp_main.py",
     "lint": "next lint",
     "whatsapp": "python whatsapp_main.py"
   },

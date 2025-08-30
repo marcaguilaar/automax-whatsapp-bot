@@ -28,12 +28,19 @@ class CarDealershipChatAgent:
         
         self.conversation_histories = {}  # Historial por usuario
         
-        # Sistema de mensajes bilingües con detección automática
+        # Sistema de mensajes multiidioma con detección automática
         self.system_message = {
             "role": "system",
             "content": """You are a virtual assistant for AutoMax, a premium car dealership. Your job is to help customers with vehicle information and in-person appointments.
 
-IMPORTANT: ALWAYS respond in the SAME LANGUAGE the customer writes to you. If they write in Spanish, respond in Spanish. If they write in English, respond in English.
+IMPORTANT: ALWAYS respond in the SAME LANGUAGE the customer writes to you. Support multiple languages including:
+- Spanish (español) - If they write in Spanish, respond in Spanish
+- English - If they write in English, respond in English  
+- French (français) - If they write in French, respond in French
+- German (deutsch) - If they write in German, respond in German
+- Italian (italiano) - If they write in Italian, respond in Italian
+- Portuguese (português) - If they write in Portuguese, respond in Portuguese
+- And other major languages as needed
 
 AVAILABLE SERVICES:
 1. Vehicle Consultation: Show available cars with detailed specifications
@@ -104,6 +111,201 @@ Always be helpful and guide customers to visit our dealership for personalized s
         if len(self.conversation_histories[user_id]) > 20:
             # Mantener el mensaje del sistema y los últimos 19 mensajes
             self.conversation_histories[user_id] = self.conversation_histories[user_id][-19:]
+    
+    def detect_user_language(self, user_message: str) -> str:
+        """Detecta el idioma del mensaje del usuario usando GPT - Soporta múltiples idiomas"""
+        try:
+            if not self.client:
+                # Fallback básico para idiomas principales
+                spanish_words = ["hola", "tengo", "quiero", "necesito", "gracias", "coches", "vehículos"]
+                french_words = ["bonjour", "salut", "voiture", "merci", "voudrais"]
+                german_words = ["hallo", "guten", "auto", "danke", "möchte"]
+                italian_words = ["ciao", "buongiorno", "auto", "grazie", "vorrei"]
+                portuguese_words = ["olá", "oi", "carro", "obrigado", "quero"]
+                
+                message_lower = user_message.lower()
+                if any(word in message_lower for word in spanish_words):
+                    return "español"
+                elif any(word in message_lower for word in french_words):
+                    return "français"
+                elif any(word in message_lower for word in german_words):
+                    return "deutsch"
+                elif any(word in message_lower for word in italian_words):
+                    return "italiano"
+                elif any(word in message_lower for word in portuguese_words):
+                    return "português"
+                return "english"
+            
+            detection_prompt = {
+                "role": "system",
+                "content": """Detect the language of the user message and respond with ONLY the language name in its native form.
+
+Supported languages and how to respond:
+- Spanish: respond "español"
+- English: respond "english" 
+- French: respond "français"
+- German: respond "deutsch"
+- Italian: respond "italiano"
+- Portuguese: respond "português"
+- Dutch: respond "nederlands"
+- Russian: respond "русский"
+- Chinese: respond "中文"
+- Japanese: respond "日本語"
+- Korean: respond "한국어"
+- Arabic: respond "العربية"
+
+Examples:
+- "hola, tenéis coches azules?" -> español
+- "hello, do you have blue cars?" -> english
+- "bonjour, avez-vous des voitures?" -> français
+- "hallo, haben Sie Autos?" -> deutsch
+- "ciao, avete auto?" -> italiano
+- "olá, têm carros?" -> português
+
+If you cannot determine the language clearly, default to "english".
+Respond with just the language name, nothing else."""
+            }
+            
+            response = self.client.chat.completions.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                    detection_prompt,
+                    {"role": "user", "content": user_message}
+                ],
+                max_tokens=15,
+                temperature=0
+            )
+            
+            detected_language = response.choices[0].message.content.strip().lower()
+            
+            # Lista de idiomas soportados
+            supported_languages = [
+                "español", "english", "français", "deutsch", "italiano", "português",
+                "nederlands", "русский", "中文", "日本語", "한국어", "العربية"
+            ]
+            
+            return detected_language if detected_language in supported_languages else "english"
+            
+        except Exception as e:
+            print(f"Error detectando idioma: {e}")
+            return "english"  # Fallback seguro
+    
+    def translate_response(self, response_text: str, target_language: str) -> str:
+        """Traduce la respuesta al idioma objetivo usando GPT - Soporta múltiples idiomas"""
+        try:
+            if not self.client:
+                return response_text  # Sin traducción si no hay cliente
+                
+            # Mapeo de nombres de idioma a códigos para verificación rápida
+            language_indicators = {
+                "español": ["hola", "vehículos", "cita", "información", "disponible"],
+                "english": ["hello", "vehicles", "appointment", "information", "available"],
+                "français": ["bonjour", "véhicules", "rendez-vous", "information", "disponible"],
+                "deutsch": ["hallo", "fahrzeuge", "termin", "information", "verfügbar"],
+                "italiano": ["ciao", "veicoli", "appuntamento", "informazioni", "disponibile"],
+                "português": ["olá", "veículos", "consulta", "informação", "disponível"]
+            }
+            
+            # Verificar si ya está en el idioma correcto (optimización)
+            if target_language in language_indicators:
+                response_lower = response_text.lower()
+                if any(word in response_lower for word in language_indicators[target_language]):
+                    return response_text  # Ya está en el idioma correcto
+            
+            # Configurar el prompt de traducción para múltiples idiomas
+            language_names = {
+                "español": "Spanish",
+                "english": "English", 
+                "français": "French",
+                "deutsch": "German",
+                "italiano": "Italian",
+                "português": "Portuguese",
+                "nederlands": "Dutch",
+                "русский": "Russian",
+                "中文": "Chinese (Simplified)",
+                "日本語": "Japanese",
+                "한국어": "Korean",
+                "العربية": "Arabic"
+            }
+            
+            target_lang_english = language_names.get(target_language, "English")
+            
+            translation_prompt = f"""Translate the following car dealership response to {target_lang_english} ({target_language}).
+
+CRITICAL TRANSLATION RULES:
+1. Maintain ALL emojis and formatting exactly as they appear
+2. Preserve technical specifications and numbers exactly (€45,000, 184 CV, 2.0L, etc.)
+3. Keep brand names unchanged (BMW, Mercedes-Benz, Audi, Ford, etc.)
+4. Translate car-related terms appropriately for the automotive industry
+5. Keep contact information as-is (phone numbers, emails, addresses)
+6. Preserve line breaks, bullet points, and special characters
+7. Return ONLY a JSON object with this exact format: {{"translated_response": "your translation here"}}
+
+Text to translate:
+{response_text}
+
+Remember: Respond with ONLY the JSON object containing the translated text, no additional text or explanations."""
+
+            response = self.client.chat.completions.create(
+                model="gpt-3.5-turbo",
+                messages=[{"role": "user", "content": translation_prompt}],
+                max_tokens=1200,  # Aumentado para idiomas que requieren más caracteres
+                temperature=0.1   # Muy baja para traducciones consistentes
+            )
+            
+            translation_result = response.choices[0].message.content.strip()
+            
+            # Intentar parsear el JSON con múltiples estrategias
+            try:
+                import json
+                
+                # Estrategia 1: JSON directo
+                json_result = json.loads(translation_result)
+                translated_text = json_result.get("translated_response", response_text)
+                
+            except json.JSONDecodeError:
+                # Estrategia 2: Buscar JSON en el texto
+                print(f"⚠️ Estrategia 2: Buscando JSON en texto para {target_language}")
+                
+                # Buscar el patrón {"translated_response": "..."}
+                import re
+                json_pattern = r'\{"translated_response":\s*"([^"]*(?:\\"[^"]*)*)"'
+                match = re.search(json_pattern, translation_result)
+                
+                if match:
+                    translated_text = match.group(1).replace('\\"', '"')
+                else:
+                    # Estrategia 3: Buscar contenido entre comillas después de translated_response
+                    if '"translated_response":' in translation_result:
+                        start = translation_result.find('"translated_response":') + len('"translated_response":')
+                        start = translation_result.find('"', start) + 1
+                        
+                        # Buscar el final considerando comillas escapadas
+                        end = start
+                        while end < len(translation_result):
+                            if translation_result[end] == '"' and translation_result[end-1] != '\\':
+                                break
+                            end += 1
+                        
+                        if end > start and (end - start) > 10:
+                            translated_text = translation_result[start:end]
+                        else:
+                            print(f"❌ Estrategia 3 falló, usando original para {target_language}")
+                            translated_text = response_text
+                    else:
+                        print(f"❌ No se encontró patrón JSON, usando original para {target_language}")
+                        translated_text = response_text
+            
+            # Validación final de la traducción
+            if len(translated_text) < 10:  # Muy corta, probablemente error
+                print(f"⚠️ Traducción sospechosamente corta, usando original")
+                return response_text
+                
+            return translated_text
+            
+        except Exception as e:
+            print(f"❌ Error en traducción a {target_language}: {e}")
+            return response_text  # Devolver original si hay error
     
     def get_vehicle_details(self, vehicle_id: str) -> str:
         """Obtiene información completa de un vehículo específico"""
@@ -380,9 +582,12 @@ Horarios disponibles:
     
     def get_response(self, user_message: str, user_id: str = "default") -> str:
         """
-        Genera una respuesta del agente de chat
+        Genera una respuesta del agente de chat con traducción automática
         """
         try:
+            # Detectar idioma del usuario
+            user_language = self.detect_user_language(user_message)
+            
             # Añadir mensaje del usuario al historial
             self.add_to_history(user_id, "user", user_message)
             
@@ -395,6 +600,7 @@ Horarios disponibles:
             
             # Verificar funciones específicas (respuesta directa sin llamar a OpenAI)
             message_lower = user_message.lower()
+            response_text = None
             
             # Función específica: Búsqueda de inventario
             search_keywords = [
@@ -405,89 +611,67 @@ Horarios disponibles:
             ]
             
             if any(keyword in message_lower for keyword in search_keywords):
-                inventory_result = self.search_inventory(user_message)
-                self.add_to_history(user_id, "assistant", inventory_result)
-                return inventory_result
+                response_text = self.search_inventory(user_message)
             
             # Función específica: Detalles de vehículo
-            detail_keywords = [
+            elif any(keyword in message_lower for keyword in [
                 "detalles", "especificaciones", "información completa", "características",
                 "motor", "potencia", "consumo", "dimensiones", "garantía", "completa",
                 "details", "specifications", "complete information", "features",
                 "engine", "power", "consumption", "dimensions", "warranty", "complete"
-            ]
-            
-            if any(keyword in message_lower for keyword in detail_keywords):
-                vehicle_details = self.get_vehicle_details("BMW_X3_2023_BLU")
-                self.add_to_history(user_id, "assistant", vehicle_details)
-                return vehicle_details
+            ]):
+                response_text = self.get_vehicle_details("BMW_X3_2023_BLU")
             
             # Función específica: Programar cita presencial (NO pruebas de manejo)
-            appointment_keywords = [
+            elif any(keyword in message_lower for keyword in [
                 "cita", "visita", "ver", "programar", "concesionario", "presencial", "agendar",
                 "appointment", "visit", "see", "schedule", "dealership", "in-person", "book"
-            ]
-            
-            if any(keyword in message_lower for keyword in appointment_keywords):
+            ]):
                 # Excluir pruebas de manejo
                 if not any(test_word in message_lower for test_word in ["prueba", "probar", "conducir", "test", "drive", "driving"]):
-                    appointment_info = self.schedule_appointment(user_message)
-                    self.add_to_history(user_id, "assistant", appointment_info)
-                    return appointment_info
+                    response_text = self.schedule_appointment(user_message)
             
             # Función específica: Información de empresa
-            company_keywords = [
+            elif any(keyword in message_lower for keyword in [
                 "empresa", "automax", "dirección", "ubicación", "horario", "contacto", "teléfono",
                 "company", "automax", "address", "location", "hours", "contact", "phone"
-            ]
+            ]):
+                response_text = self.get_company_info(user_message)
             
-            if any(keyword in message_lower for keyword in company_keywords):
-                company_info = self.get_company_info(user_message)
-                self.add_to_history(user_id, "assistant", company_info)
-                return company_info
+            # Si no es función específica, usar IA
+            if response_text is None:
+                try:
+                    if self.client:
+                        # Usar nuevo cliente
+                        response = self.client.chat.completions.create(
+                            model="gpt-4o-mini",
+                            messages=messages,
+                            max_tokens=500,
+                            temperature=0.7
+                        )
+                        response_text = response.choices[0].message.content.strip()
+                    else:
+                        # Usar API antigua para compatibilidad
+                        import openai
+                        response = openai.ChatCompletion.create(
+                            model="gpt-4o-mini",
+                            messages=messages,
+                            max_tokens=500,
+                            temperature=0.7
+                        )
+                        response_text = response.choices[0].message.content.strip()
+                except Exception as e:
+                    print(f"❌ Error en llamada OpenAI: {e}")
+                    # Respuesta de fallback básica
+                    response_text = "¡Hola! 👋 Bienvenido a AutoMax, tu concesionario de confianza. 🚗 Estoy aquí para ayudarte a encontrar el auto perfecto. ¿En qué puedo ayudarte hoy?"
             
-            # Si no es función específica, usar IA con mensajes contextuales
-            # Llamar a OpenAI para conversación general
-            try:
-                if self.client:
-                    # Usar nuevo cliente
-                    response = self.client.chat.completions.create(
-                        model="gpt-4o-mini",
-                        messages=messages,
-                        max_tokens=500,
-                        temperature=0.7
-                    )
-                    assistant_response = response.choices[0].message.content.strip()
-                else:
-                    # Usar API antigua para compatibilidad
-                    import openai
-                    response = openai.ChatCompletion.create(
-                        model="gpt-4o-mini",
-                        messages=messages,
-                        max_tokens=500,
-                        temperature=0.7
-                    )
-                    assistant_response = response.choices[0].message.content.strip()
-            except Exception as e:
-                print(f"❌ Error en llamada OpenAI: {e}")
-                # Respuesta de fallback inteligente bilingüe
-                if any(eng_word in message_lower for eng_word in ["hello", "hi", "car", "blue", "red", "do you have"]):
-                    # Respuesta en inglés
-                    if any(keyword in message_lower for keyword in ["blue", "car", "vehicle"]):
-                        assistant_response = "🚗 Excellent choice! We have several blue vehicles available:\n\n• BMW 3 Series (2023) - Blue color, €40,000\n• SEAT León (2023) - Blue color, €25,000\n\nAre you interested in learning more details about any of them? Would you like to schedule a test drive? 📅"
-                    else:
-                        assistant_response = "Hello! 👋 Welcome to AutoMax, your trusted dealership. 🚗 I'm here to help you find the perfect car. How can I help you today?"
-                else:
-                    # Respuesta en español
-                    if any(keyword in message_lower for keyword in ["azul", "coche", "auto"]):
-                        assistant_response = "🚗 ¡Excelente elección! Tenemos varios vehículos azules disponibles:\n\n• BMW Serie 3 (2023) - Color azul, €40,000\n• SEAT León (2023) - Color azul, €25,000\n\n¿Te interesa conocer más detalles de alguno? ¿Quieres programar una prueba de manejo? 📅"
-                    else:
-                        assistant_response = "¡Hola! 👋 Bienvenido a AutoMax, tu concesionario de confianza. 🚗 Estoy aquí para ayudarte a encontrar el auto perfecto. ¿En qué puedo ayudarte hoy?"
+            # TRADUCIR AUTOMÁTICAMENTE LA RESPUESTA AL IDIOMA DEL USUARIO
+            final_response = self.translate_response(response_text, user_language)
             
             # Añadir respuesta al historial
-            self.add_to_history(user_id, "assistant", assistant_response)
+            self.add_to_history(user_id, "assistant", final_response)
             
-            return assistant_response
+            return final_response
             
         except Exception as e:
             print(f"❌ Error en get_response: {e}")

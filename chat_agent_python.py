@@ -33,14 +33,7 @@ class CarDealershipChatAgent:
             "role": "system",
             "content": """You are a virtual assistant for AutoMax, a premium car dealership. Your job is to help customers with vehicle information and in-person appointments.
 
-IMPORTANT: ALWAYS respond in the SAME LANGUAGE the customer writes to you. Support multiple languages including:
-- Spanish (español) - If they write in Spanish, respond in Spanish
-- English - If they write in English, respond in English  
-- French (français) - If they write in French, respond in French
-- German (deutsch) - If they write in German, respond in German
-- Italian (italiano) - If they write in Italian, respond in Italian
-- Portuguese (português) - If they write in Portuguese, respond in Portuguese
-- And other major languages as needed
+ALWAYS respond in ENGLISH ONLY. This is an English-only system.
 
 AVAILABLE SERVICES:
 1. Vehicle Consultation: Show available cars with detailed specifications
@@ -364,25 +357,25 @@ Remember: Respond with ONLY the JSON object containing the translated text, no a
         """Obtiene información completa de un vehículo específico"""
         cars = {
             "BMW_X3_2023_BLU": {
-                "marca": "BMW", "modelo": "X3", "año": 2023, 
-                "precio": "€45,000", "color": "azul metalizado", "tipo": "SUV",
-                "motor": "2.0L TwinPower Turbo de 4 cilindros",
-                "combustible": "Gasolina", "transmision": "Automática Steptronic de 8 velocidades",
-                "km": "0 km (vehículo nuevo)", "potencia": "184 CV (135 kW)",
-                "consumo": "7.2L/100km (mixto)", "emisiones": "164 g/km CO2",
-                "traccion": "Tracción total xDrive",
-                "caracteristicas": [
-                    "Sistema de navegación BMW Live Cockpit Professional",
-                    "Asientos de cuero Dakota con calefacción",
-                    "Sensor de aparcamiento delantero y trasero",
-                    "Control automático de climatización de 3 zonas",
-                    "Faros LED adaptativos",
-                    "Portón trasero eléctrico"
+                "brand": "BMW", "model": "X3", "year": 2023, 
+                "price": "€45,000", "color": "metallic blue", "type": "SUV",
+                "engine": "2.0L TwinPower Turbo 4-cylinder",
+                "fuel": "Gasoline", "transmission": "8-speed Steptronic Automatic",
+                "mileage": "0 km (new vehicle)", "power": "184 HP (135 kW)",
+                "consumption": "7.2L/100km (combined)", "emissions": "164 g/km CO2",
+                "drivetrain": "xDrive All-Wheel Drive",
+                "features": [
+                    "BMW Live Cockpit Professional navigation system",
+                    "Dakota leather heated seats",
+                    "Front and rear parking sensors",
+                    "3-zone automatic air conditioning",
+                    "Adaptive LED headlights",
+                    "Electric tailgate"
                 ],
-                "dimensiones": "4.71m x 1.89m x 1.68m",
-                "capacidad_maletero": "550 litros",
-                "garantia": "2 años garantía de fábrica + 3 años BMW Service Inclusive",
-                "imagen": "images/bmw_x3.png"
+                "dimensions": "4.71m x 1.89m x 1.68m",
+                "trunk_capacity": "550 liters",
+                "warranty": "2-year factory warranty + 3-year BMW Service Inclusive",
+                "image": "images/bmw_x3.png"
             },
             "BMW_3_2023_BLU": {
                 "marca": "BMW", "modelo": "Serie 3", "año": 2023,
@@ -509,54 +502,54 @@ Remember: Respond with ONLY the JSON object containing the translated text, no a
         if vehicle_id in cars:
             car = cars[vehicle_id]
             
-            # Formato visual mejorado sin asteriscos
-            result = f"🚗 {car['marca']} {car['modelo']} ({car['año']})\n"
+            # Formato visual mejorado sin asteriscos - EN INGLÉS
+            result = f"🚗 {car['brand']} {car['model']} ({car['year']})\n"
             result += "═══════════════════════════════\n\n"
             
             # Información básica con diseño limpio
-            result += f"💰 Precio: {car['precio']}\n"
+            result += f"💰 Price: {car['price']}\n"
             result += f"🎨 Color: {car['color']}\n"
-            result += f"📊 Kilometraje: {car['km']}\n"
-            result += f"🚙 Tipo: {car['tipo']}\n\n"
+            result += f"📊 Mileage: {car['mileage']}\n"
+            result += f"🚙 Type: {car['type']}\n\n"
             
             # Especificaciones técnicas con emojis organizados
-            result += "🔧 ESPECIFICACIONES TÉCNICAS\n"
+            result += "🔧 TECHNICAL SPECIFICATIONS\n"
             result += "───────────────────────────────\n"
-            result += f"⚡ Motor: {car['motor']}\n"
-            result += f"🏎️ Potencia: {car['potencia']}\n"
-            result += f"⚙️ Transmisión: {car['transmision']}\n"
-            result += f"🚗 Tracción: {car['traccion']}\n"
-            result += f"⛽ Consumo: {car['consumo']}\n"
-            result += f"🌱 Emisiones: {car['emisiones']}\n\n"
+            result += f"⚡ Engine: {car['engine']}\n"
+            result += f"🏎️ Power: {car['power']}\n"
+            result += f"⚙️ Transmission: {car['transmission']}\n"
+            result += f"🚗 Drivetrain: {car['drivetrain']}\n"
+            result += f"⛽ Consumption: {car['consumption']}\n"
+            result += f"🌱 Emissions: {car['emissions']}\n\n"
             
             # Dimensiones con presentación clara
-            result += "📏 DIMENSIONES\n"
+            result += "📏 DIMENSIONS\n"
             result += "───────────────────────────────\n"
-            result += f"📐 Exterior: {car['dimensiones']}\n"
-            result += f"🧳 Maletero: {car['capacidad_maletero']}\n\n"
+            result += f"📐 Exterior: {car['dimensions']}\n"
+            result += f"🧳 Trunk: {car['trunk_capacity']}\n\n"
             
             # Características con formato atractivo
-            result += "✨ CARACTERÍSTICAS DESTACADAS\n"
+            result += "✨ FEATURED CHARACTERISTICS\n"
             result += "───────────────────────────────\n"
-            for i, feature in enumerate(car['caracteristicas'], 1):
+            for i, feature in enumerate(car['features'], 1):
                 result += f"🔹 {feature}\n"
             
             # Garantía con formato especial
-            result += f"\n🛡️ GARANTÍA\n"
+            result += f"\n🛡️ WARRANTY\n"
             result += "───────────────────────────────\n"
-            result += f"📋 {car['garantia']}\n\n"
+            result += f"📋 {car['warranty']}\n\n"
             
             # Call to action final
-            result += "🏢 ¿Te gustaría agendar una cita para verlo en nuestro concesionario?\n"
-            result += "📞 ¡Estamos listos para atenderte!"
+            result += "🏢 Would you like to schedule an appointment to see it at our dealership?\n"
+            result += "📞 We're ready to help you!"
             
             # Almacenar la ruta de la imagen para uso posterior
-            self._last_vehicle_image = car.get("imagen")
+            self._last_vehicle_image = car.get("image")
             
             return result
         else:
             self._last_vehicle_image = None
-            return "No encontré ese vehículo específico. ¿Puedes decirme qué modelo te interesa? Tengo información detallada de todos nuestros vehículos."
+            return "I couldn't find that specific vehicle. Can you tell me which model interests you? I have detailed information on all our vehicles."
 
     def get_last_vehicle_image(self) -> str:
         """Obtiene la ruta de la imagen del último vehículo consultado"""
@@ -656,178 +649,108 @@ Remember: Respond with ONLY the JSON object containing the translated text, no a
                    "¿Qué más te gustaría saber sobre nosotros?")
 
     def search_inventory(self, query: str) -> str:
-        """Búsqueda inteligente en inventario con información detallada"""
+        """Smart inventory search with detailed information - ENGLISH VERSION"""
         query_lower = query.lower()
         
-        # Inventario detallado con especificaciones completas
+        # Simplified inventory for English system
         cars = [
             {
-                "id": "BMW_X3_2023_BLU", "marca": "BMW", "modelo": "X3", "año": 2023, 
-                "precio": "€45,000", "color": "azul metalizado", "tipo": "SUV",
-                "motor": "2.0L TwinPower Turbo", "combustible": "Gasolina", 
-                "transmision": "Automática 8 velocidades", "km": "0 km (nuevo)",
-                "potencia": "184 CV", "consumo": "7.2L/100km", 
-                "caracteristicas": ["Navegación BMW", "Asientos de cuero", "Tracción total xDrive"]
+                "id": "BMW_X3_2023_BLU", "brand": "BMW", "model": "X3", "year": 2023, 
+                "price": "€45,000", "color": "metallic blue", "type": "SUV",
+                "engine": "2.0L TwinPower Turbo", "fuel": "Gasoline", 
+                "transmission": "8-speed Automatic", "mileage": "0 km (new)",
+                "power": "184 HP", "consumption": "7.2L/100km", 
+                "features": ["BMW Navigation", "Leather seats", "xDrive AWD"]
             },
             {
-                "id": "MERCEDES_C_2023_BLK", "marca": "Mercedes-Benz", "modelo": "C-Class", "año": 2023,
-                "precio": "€42,000", "color": "negro obsidiana", "tipo": "sedán", 
-                "motor": "1.5L Turbo", "combustible": "Gasolina", 
-                "transmision": "Automática 9G-TRONIC", "km": "0 km (nuevo)",
-                "potencia": "170 CV", "consumo": "6.8L/100km",
-                "caracteristicas": ["MBUX", "Asientos deportivos", "LED High Performance"]
+                "id": "BMW_3_2023_BLU", "brand": "BMW", "model": "Serie 3", "year": 2023,
+                "price": "€40,000", "color": "storm bay blue", "type": "sedan",
+                "engine": "2.0L TwinPower", "fuel": "Gasoline",
+                "transmission": "Steptronic Automatic", "mileage": "0 km (new)",
+                "power": "184 HP", "consumption": "6.9L/100km",
+                "features": ["iDrive 7.0", "Harman Kardon", "Sport seats"]
             },
             {
-                "id": "AUDI_A4_2022_WHT", "marca": "Audi", "modelo": "A4", "año": 2022,
-                "precio": "€38,000", "color": "blanco glaciar", "tipo": "sedán",
-                "motor": "2.0L TFSI", "combustible": "Gasolina",
-                "transmision": "S tronic 7 velocidades", "km": "15,000 km",
-                "potencia": "190 CV", "consumo": "6.5L/100km", 
-                "caracteristicas": ["Virtual Cockpit", "quattro", "Bang & Olufsen"]
+                "id": "MERCEDES_C_2023_BLK", "brand": "Mercedes-Benz", "model": "C-Class", "year": 2023,
+                "price": "€42,000", "color": "obsidian black", "type": "sedan", 
+                "engine": "1.5L Turbo", "fuel": "Gasoline", 
+                "transmission": "9G-TRONIC Automatic", "mileage": "0 km (new)",
+                "power": "170 HP", "consumption": "6.8L/100km",
+                "features": ["MBUX", "Sport seats", "LED High Performance"]
             },
             {
-                "id": "BMW_3_2023_BLU", "marca": "BMW", "modelo": "Serie 3", "año": 2023,
-                "precio": "€40,000", "color": "azul storm bay", "tipo": "sedán",
-                "motor": "2.0L TwinPower", "combustible": "Gasolina",
-                "transmision": "Automática Steptronic", "km": "0 km (nuevo)",
-                "potencia": "184 CV", "consumo": "6.9L/100km",
-                "caracteristicas": ["iDrive 7.0", "Harman Kardon", "Asientos deportivos"]
+                "id": "AUDI_A4_2022_WHT", "brand": "Audi", "model": "A4", "year": 2022,
+                "price": "€38,000", "color": "glacier white", "type": "sedan",
+                "engine": "2.0L TFSI", "fuel": "Gasoline",
+                "transmission": "S tronic 7-speed", "mileage": "15,000 km",
+                "power": "190 HP", "consumption": "6.5L/100km", 
+                "features": ["Virtual Cockpit", "quattro", "Bang & Olufsen"]
             },
             {
-                "id": "VW_TIGUAN_2022_RED", "marca": "Volkswagen", "modelo": "Tiguan", "año": 2022,
-                "precio": "€32,000", "color": "rojo tornado", "tipo": "SUV",
-                "motor": "1.5L TSI", "combustible": "Gasolina",
-                "transmision": "DSG automático", "km": "22,000 km",
-                "potencia": "150 CV", "consumo": "7.0L/100km",
-                "caracteristicas": ["Digital Cockpit", "4MOTION", "App-Connect"]
+                "id": "SEAT_LEON_2023_BLU", "brand": "SEAT", "model": "León", "year": 2023,
+                "price": "€25,000", "color": "Desire blue", "type": "hatchback",
+                "engine": "1.5L TSI", "fuel": "Gasoline",
+                "transmission": "6-speed Manual", "mileage": "0 km (new)",
+                "power": "130 HP", "consumption": "5.8L/100km",
+                "features": ["SEAT Connect", "Full LED", "Wireless Charger"]
             },
             {
-                "id": "SEAT_LEON_2023_BLU", "marca": "SEAT", "modelo": "León", "año": 2023,
-                "precio": "€25,000", "color": "azul Desire", "tipo": "hatchback",
-                "motor": "1.5L TSI", "combustible": "Gasolina",
-                "transmision": "Manual 6 velocidades", "km": "0 km (nuevo)",
-                "potencia": "130 CV", "consumo": "5.8L/100km",
-                "caracteristicas": ["SEAT Connect", "Full LED", "Wireless Charger"]
-            },
-            {
-                "id": "FORD_MUSTANG_2023_RED", "marca": "Ford", "modelo": "Mustang", "año": 2023,
-                "precio": "€55,000", "color": "rojo racing", "tipo": "deportivo",
-                "motor": "5.0L V8", "combustible": "Gasolina",
-                "transmision": "Manual 6 velocidades", "km": "0 km (nuevo)",
-                "potencia": "450 CV", "consumo": "12.4L/100km",
-                "caracteristicas": ["SYNC 3", "Brembo", "Recaro asientos"]
+                "id": "FORD_MUSTANG_2023_RED", "brand": "Ford", "model": "Mustang", "year": 2023,
+                "price": "€55,000", "color": "racing red", "type": "sports car",
+                "engine": "5.0L V8", "fuel": "Gasoline",
+                "transmission": "6-speed Manual", "mileage": "0 km (new)",
+                "power": "450 HP", "consumption": "12.4L/100km",
+                "features": ["SYNC 3", "Brembo brakes", "Recaro seats"]
             }
         ]
         
-        # Filtros de búsqueda MEJORADOS Y ESPECÍFICOS
+        # Simple filtering for English system
         filtered_cars = cars.copy()
-        applied_filters = []  # Para rastrear qué filtros se aplicaron
         
-        # Filtrar por COMBUSTIBLE (nuevo filtro crítico)
-        combustible_keywords = {
-            "eléctrico": "Eléctrico", "electrico": "Eléctrico", "electric": "Eléctrico",
-            "híbrido": "Híbrido", "hibrido": "Híbrido", "hybrid": "Híbrido",
-            "gasolina": "Gasolina", "gasoline": "Gasolina", "petrol": "Gasolina",
-            "diesel": "Diesel", "diésel": "Diesel"
-        }
-        
-        for fuel_key, fuel_value in combustible_keywords.items():
-            if fuel_key in query_lower:
-                original_count = len(filtered_cars)
-                filtered_cars = [car for car in filtered_cars if car["combustible"] == fuel_value]
-                applied_filters.append(f"combustible: {fuel_value}")
-                if len(filtered_cars) != original_count:
+        # Filter by brand
+        if any(brand in query_lower for brand in ["bmw", "mercedes", "audi", "seat", "ford"]):
+            for brand in ["bmw", "mercedes", "audi", "seat", "ford"]:
+                if brand in query_lower:
+                    brand_map = {"bmw": "BMW", "mercedes": "Mercedes-Benz", "audi": "Audi", "seat": "SEAT", "ford": "Ford"}
+                    filtered_cars = [car for car in filtered_cars if car["brand"] == brand_map[brand]]
                     break
         
-        # Filtrar por PRECIO (nuevo filtro para "barato", "más barato", etc.)
-        price_keywords = [
-            "barato", "más barato", "menos caro", "económico", "presupuesto",
-            "cheap", "cheaper", "affordable", "budget", "less expensive"
-        ]
-        
-        if any(keyword in query_lower for keyword in price_keywords):
-            # Ordenar por precio y mostrar los más baratos primero
-            filtered_cars = sorted(filtered_cars, key=lambda x: int(x["precio"].replace("€", "").replace(",", "")))
-            applied_filters.append("ordenado por precio: más barato primero")
-        
-        # Filtrar por color (mejorado)
-        colors = {
-            "azul": "azul", "blue": "azul", "bleu": "azul",
-            "rojo": "rojo", "red": "rojo", "rouge": "rojo", 
-            "negro": "negro", "black": "negro", "noir": "negro",
-            "blanco": "blanco", "white": "blanco", "blanc": "blanco",
-            "gris": "gris", "gray": "gris", "grey": "gris"
-        }
-        
-        for color_key, color_value in colors.items():
-            if color_key in query_lower:
-                original_count = len(filtered_cars)
-                filtered_cars = [car for car in filtered_cars if color_value in car["color"].lower()]
-                if len(filtered_cars) != original_count:
-                    applied_filters.append(f"color: {color_value}")
+        # Filter by color
+        if any(color in query_lower for color in ["blue", "black", "white", "red"]):
+            for color in ["blue", "black", "white", "red"]:
+                if color in query_lower:
+                    filtered_cars = [car for car in filtered_cars if color in car["color"].lower()]
                     break
         
-        # Filtrar por tipo (mejorado)
-        types = {
-            "suv": "SUV", "sedan": "sedán", "sedán": "sedán", 
-            "deportivo": "deportivo", "sports": "deportivo", "sport": "deportivo",
-            "hatchback": "hatchback", "compacto": "hatchback"
-        }
-        
-        for type_key, type_value in types.items():
-            if type_key in query_lower:
-                original_count = len(filtered_cars)
-                filtered_cars = [car for car in filtered_cars if car["tipo"] == type_value]
-                if len(filtered_cars) != original_count:
-                    applied_filters.append(f"tipo: {type_value}")
+        # Filter by type
+        if any(vtype in query_lower for vtype in ["suv", "sedan", "sports", "hatchback"]):
+            for vtype in ["suv", "sedan", "sports", "hatchback"]:
+                if vtype in query_lower:
+                    filtered_cars = [car for car in filtered_cars if vtype in car["type"].lower()]
                     break
         
-        # Filtrar por marca (mejorado)
-        brands = {
-            "bmw": "BMW", "mercedes": "Mercedes-Benz", "audi": "Audi", 
-            "volkswagen": "Volkswagen", "vw": "Volkswagen", "seat": "SEAT", "ford": "Ford"
-        }
-        
-        for brand_key, brand_value in brands.items():
-            if brand_key in query_lower:
-                original_count = len(filtered_cars)
-                filtered_cars = [car for car in filtered_cars if car["marca"] == brand_value]
-                if len(filtered_cars) != original_count:
-                    applied_filters.append(f"marca: {brand_value}")
-                    break
-        
-        # RESPUESTA INTELIGENTE BASADA EN RESULTADOS
+        # Generate response
         if filtered_cars:
-            result = "🚗 Vehículos disponibles:\n\n"
+            result = "🚗 Available vehicles:\n\n"
             
-            # Mostrar TODOS los vehículos filtrados
             for i, car in enumerate(filtered_cars, 1):
-                result += f"{i}. {car['marca']} {car['modelo']} ({car['año']})\n"
-                result += f"   💰 Precio: {car['precio']}\n"
+                result += f"{i}. {car['brand']} {car['model']} ({car['year']})\n"
+                result += f"   💰 Price: {car['price']}\n"
                 result += f"   🎨 Color: {car['color']}\n"
-                result += f"   ⚡ Motor: {car['motor']} - {car['potencia']}\n"
-                result += f"   📊 Kilometraje: {car['km']}\n\n"
+                result += f"   ⚡ Engine: {car['engine']} - {car['power']}\n"
+                result += f"   📊 Mileage: {car['mileage']}\n\n"
             
-            # Información del filtrado aplicado
             total_vehicles = len(filtered_cars)
             if total_vehicles == 1:
-                result += f"✅ Este es el único vehículo que coincide con tu búsqueda.\n\n"
+                result += f"✅ This is the only vehicle that matches your search.\n\n"
             else:
-                result += f"✅ Total: {total_vehicles} vehículos que coinciden con tu búsqueda.\n\n"
+                result += f"✅ Total: {total_vehicles} vehicles matching your search.\n\n"
             
-            result += "💡 Para información completa de cualquier vehículo, pregúntame por el modelo específico.\n"
-            result += "📅 ¿Te gustaría programar una cita para verlos en persona?"
+            result += "💡 For complete information about any vehicle, ask me about the specific model.\n"
+            result += "📅 Would you like to schedule an appointment to see them in person?"
             return result
-            
         else:
-            # RESPUESTA ESPECÍFICA CUANDO NO HAY RESULTADOS
-            if applied_filters:
-                # Sabemos exactamente qué filtros se aplicaron y no dieron resultados
-                filter_text = ", ".join(applied_filters)
-                return f"❌ Lo siento, actualmente no tenemos vehículos con las características que buscas ({filter_text}).\n\n🚗 Nuestro inventario actual incluye vehículos de gasolina de marcas como BMW, Mercedes-Benz, Audi, Volkswagen, SEAT y Ford.\n\n¿Te gustaría ver alguna de estas opciones disponibles? ¿O prefieres que te notifique cuando tengamos vehículos que coincidan con tu búsqueda?"
-            else:
-                # Búsqueda general sin filtros específicos detectados
-                return "No encontré vehículos con esas características específicas, pero tengo otras opciones excelentes. ¿Quieres ver todo nuestro inventario disponible?"
+            return "❌ Sorry, we currently don't have vehicles matching your search criteria.\n\n🚗 Our current inventory includes gasoline vehicles from brands like BMW, Mercedes-Benz, Audi, SEAT, and Ford.\n\nWould you like to see any of these available options? Or would you prefer that I notify you when we have vehicles that match your search?"
     
     def schedule_appointment(self, details: str) -> str:
         """Simula programación de cita"""
@@ -852,29 +775,29 @@ Horarios disponibles:
             # Crear prompt para determinar la intención
             intent_prompt = {
                 "role": "system",
-                "content": """Eres un asistente especializado en determinar la intención del usuario en un concesionario de autos.
+                "content": """You are an assistant specialized in determining user intent at a car dealership.
 
-Analiza el mensaje del usuario y determina cuál de estas 5 acciones debe ejecutarse:
+Analyze the user's message and determine which of these 5 actions should be executed:
 
-1. SEARCH_INVENTORY - Búsqueda general de vehículos (por marca, color, tipo, precio, disponibilidad)
-   Ejemplos: "¿qué coches tenéis?", "coches azules", "BMW disponibles", "algo barato"
+1. SEARCH_INVENTORY - General vehicle search (by brand, color, type, price, availability)
+   Examples: "what cars do you have?", "blue cars", "available BMW", "something cheap"
 
-2. VEHICLE_DETAILS - Información específica y detallada de UN vehículo concreto
-   Ejemplos: "más información del BMW X3", "especificaciones del Serie 3", "detalles completos del Mercedes"
+2. VEHICLE_DETAILS - Specific and detailed information about ONE particular vehicle
+   Examples: "more information about the BMW X3", "Serie 3 specifications", "complete details of the Mercedes"
 
-3. SCHEDULE_APPOINTMENT - Programar cita para visitar el concesionario (NO test drives)
-   Ejemplos: "quiero hacer una cita", "visitar el concesionario", "ver los coches en persona"
+3. SCHEDULE_APPOINTMENT - Schedule appointment to visit the dealership (NO test drives)
+   Examples: "I want to make an appointment", "visit the dealership", "see the cars in person"
 
-4. COMPANY_INFO - Información sobre AutoMax (horarios, ubicación, contacto)
-   Ejemplos: "dónde estáis", "vuestros horarios", "teléfono de AutoMax"
+4. COMPANY_INFO - Information about AutoMax (hours, location, contact)
+   Examples: "where are you located", "your hours", "AutoMax phone number"
 
-5. GENERAL_CHAT - Conversación general, saludos, o consultas que no requieren función específica
-   Ejemplos: "hola", "gracias", "qué tal", preguntas sobre financiación/test drives (que no ofrecemos)
+5. GENERAL_CHAT - General conversation, greetings, or queries that don't require specific function
+   Examples: "hello", "thanks", "how are you", questions about financing/test drives (which we don't offer)
 
-Responde SOLO con una de estas opciones: SEARCH_INVENTORY, VEHICLE_DETAILS, SCHEDULE_APPOINTMENT, COMPANY_INFO, o GENERAL_CHAT
+Respond ONLY with one of these options: SEARCH_INVENTORY, VEHICLE_DETAILS, SCHEDULE_APPOINTMENT, COMPANY_INFO, or GENERAL_CHAT
 
-Si el usuario pide información específica de un modelo concreto (como "más información del BMW X3"), es VEHICLE_DETAILS.
-Si busca opciones generales (como "¿qué BMW tenéis?"), es SEARCH_INVENTORY."""
+If the user asks for specific information about a concrete model (like "more information about the BMW X3"), it's VEHICLE_DETAILS.
+If they search for general options (like "what BMW do you have?"), it's SEARCH_INVENTORY."""
             }
             
             if self.client:
@@ -917,7 +840,7 @@ Si busca opciones generales (como "¿qué BMW tenéis?"), es SEARCH_INVENTORY.""
                     return response.choices[0].message.content.strip()
             else:
                 # Fallback sin cliente
-                return "¡Hola! 👋 Bienvenido a AutoMax. ¿En qué puedo ayudarte hoy?"
+                return "Hello! 👋 Welcome to AutoMax. How can I help you today?"
                 
         except Exception as e:
             print(f"❌ Error interpretando intención: {e}")
@@ -932,18 +855,15 @@ Si busca opciones generales (como "¿qué BMW tenéis?"), es SEARCH_INVENTORY.""
                     )
                     return response.choices[0].message.content.strip()
                 else:
-                    return "¡Hola! 👋 Bienvenido a AutoMax. ¿En qué puedo ayudarte hoy?"
+                    return "Hello! 👋 Welcome to AutoMax. How can I help you today?"
             except:
-                return "¡Hola! 👋 Bienvenido a AutoMax. ¿En qué puedo ayudarte hoy?"
+                return "Hello! 👋 Welcome to AutoMax. How can I help you today?"
     
     def get_response(self, user_message: str, user_id: str = "default") -> str:
         """
-        Genera una respuesta del agente de chat con traducción automática
+        Genera una respuesta del agente de chat en inglés únicamente
         """
         try:
-            # Detectar idioma del usuario
-            user_language = self.detect_user_language(user_message)
-            
             # Añadir mensaje del usuario al historial
             self.add_to_history(user_id, "user", user_message)
             
@@ -957,17 +877,14 @@ Si busca opciones generales (como "¿qué BMW tenéis?"), es SEARCH_INVENTORY.""
             # Usar GPT para determinar la intención del usuario e invocar la función apropiada
             response_text = self.interpret_user_intent(user_message, messages)
             
-            # TRADUCIR AUTOMÁTICAMENTE LA RESPUESTA AL IDIOMA DEL USUARIO
-            final_response = self.translate_response(response_text, user_language)
-            
             # Añadir respuesta al historial
-            self.add_to_history(user_id, "assistant", final_response)
+            self.add_to_history(user_id, "assistant", response_text)
             
-            return final_response
+            return response_text
             
         except Exception as e:
             print(f"❌ Error en get_response: {e}")
-            return "Lo siento, hubo un problema procesando tu mensaje. ¿Podrías intentarlo de nuevo?"
+            return "Sorry, there was a problem processing your message. Could you please try again?"
 
     def process_message(self, user_message: str, user_id: str = "default") -> Dict[str, Any]:
         """

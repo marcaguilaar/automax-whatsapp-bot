@@ -301,60 +301,75 @@ Remember: Respond with ONLY the JSON object containing the translated text, no a
             return response_text  # Devolver original si hay error
     
     def detect_specific_vehicle(self, query: str) -> str:
-        """Detecta qué vehículo específico quiere el usuario"""
+        """Detect which specific vehicle the user wants - ENGLISH VERSION"""
         query_lower = query.lower()
         
-        # Mapeo de palabras clave a IDs de vehículos
+        # Mapping of keywords to vehicle IDs
         vehicle_mapping = {
-            # Por modelo específico
+            # By specific model
             "x3": "BMW_X3_2023_BLU",
             "bmw x3": "BMW_X3_2023_BLU",
             "serie 3": "BMW_3_2023_BLU", 
+            "series 3": "BMW_3_2023_BLU",
             "bmw serie 3": "BMW_3_2023_BLU",
+            "bmw series 3": "BMW_3_2023_BLU",
             "c-class": "MERCEDES_C_2023_BLK",
+            "c class": "MERCEDES_C_2023_BLK",
             "mercedes": "MERCEDES_C_2023_BLK",
+            "mercedes-benz": "MERCEDES_C_2023_BLK",
             "a4": "AUDI_A4_2022_WHT",
             "audi": "AUDI_A4_2022_WHT",
-            "tiguan": "VW_TIGUAN_2022_RED",
-            "volkswagen": "VW_TIGUAN_2022_RED",
+            "audi a4": "AUDI_A4_2022_WHT",
             "león": "SEAT_LEON_2023_BLU",
             "leon": "SEAT_LEON_2023_BLU",
             "seat": "SEAT_LEON_2023_BLU",
+            "seat leon": "SEAT_LEON_2023_BLU",
             "mustang": "FORD_MUSTANG_2023_RED",
             "ford": "FORD_MUSTANG_2023_RED",
+            "ford mustang": "FORD_MUSTANG_2023_RED",
             
-            # Por características especiales
-            "más barato": "SEAT_LEON_2023_BLU",
-            "mas barato": "SEAT_LEON_2023_BLU", 
-            "barato": "SEAT_LEON_2023_BLU",
-            "económico": "SEAT_LEON_2023_BLU",
+            # By special characteristics
             "cheapest": "SEAT_LEON_2023_BLU",
-            
-            "más caro": "FORD_MUSTANG_2023_RED",
-            "mas caro": "FORD_MUSTANG_2023_RED",
-            "caro": "FORD_MUSTANG_2023_RED", 
+            "cheap": "SEAT_LEON_2023_BLU",
+            "affordable": "SEAT_LEON_2023_BLU",
+            "budget": "SEAT_LEON_2023_BLU",
+            "most expensive": "FORD_MUSTANG_2023_RED",
             "expensive": "FORD_MUSTANG_2023_RED",
+            "premium": "FORD_MUSTANG_2023_RED",
+            "luxury": "MERCEDES_C_2023_BLK",
             
-            "deportivo": "FORD_MUSTANG_2023_RED",
-            "sports": "FORD_MUSTANG_2023_RED",
+            # By color
+            "blue": "BMW_X3_2023_BLU",
+            "metallic blue": "BMW_X3_2023_BLU",
+            "storm bay blue": "BMW_3_2023_BLU",
+            "black": "MERCEDES_C_2023_BLK",
+            "obsidian black": "MERCEDES_C_2023_BLK",
+            "white": "AUDI_A4_2022_WHT",
+            "glacier white": "AUDI_A4_2022_WHT",
+            "red": "FORD_MUSTANG_2023_RED",
+            "racing red": "FORD_MUSTANG_2023_RED",
+            "desire blue": "SEAT_LEON_2023_BLU",
             
-            # Por color
-            "azul": "BMW_X3_2023_BLU",  # Primer azul disponible
-            "rojo": "VW_TIGUAN_2022_RED",  # Primer rojo disponible
-            "negro": "MERCEDES_C_2023_BLK",
-            "blanco": "AUDI_A4_2022_WHT"
+            # By type
+            "suv": "BMW_X3_2023_BLU",
+            "sedan": "MERCEDES_C_2023_BLK",
+            "sports car": "FORD_MUSTANG_2023_RED",
+            "sport": "FORD_MUSTANG_2023_RED",
+            
+            # By brand (default to most popular model)
+            "bmw": "BMW_X3_2023_BLU"
         }
         
-        # Buscar coincidencias en el query
+        # Search for matches
         for keyword, vehicle_id in vehicle_mapping.items():
             if keyword in query_lower:
                 return vehicle_id
         
-        # Si no encuentra nada específico, devolver el más popular (BMW X3)
+        # If no specific vehicle detected, return default
         return "BMW_X3_2023_BLU"
 
     def get_vehicle_details(self, vehicle_id: str) -> str:
-        """Obtiene información completa de un vehículo específico"""
+        """Get complete information for a specific vehicle - ENGLISH VERSION"""
         cars = {
             "BMW_X3_2023_BLU": {
                 "brand": "BMW", "model": "X3", "year": 2023, 
@@ -378,124 +393,104 @@ Remember: Respond with ONLY the JSON object containing the translated text, no a
                 "image": "images/bmw_x3.png"
             },
             "BMW_3_2023_BLU": {
-                "marca": "BMW", "modelo": "Serie 3", "año": 2023,
-                "precio": "€40,000", "color": "azul storm bay", "tipo": "sedán",
-                "motor": "2.0L TwinPower Turbo de 4 cilindros",
-                "combustible": "Gasolina", "transmision": "Automática Steptronic",
-                "km": "0 km (vehículo nuevo)", "potencia": "184 CV",
-                "consumo": "6.9L/100km", "emisiones": "158 g/km CO2",
-                "traccion": "Tracción trasera",
-                "caracteristicas": [
-                    "Sistema iDrive 7.0 con pantalla táctil",
-                    "Harman Kardon sistema de sonido premium",
-                    "Asientos deportivos con ajuste eléctrico",
-                    "Conectividad BMW ConnectedDrive",
-                    "Control de crucero adaptativo"
+                "brand": "BMW", "model": "Serie 3", "year": 2023,
+                "price": "€40,000", "color": "storm bay blue", "type": "sedan",
+                "engine": "2.0L TwinPower Turbo 4-cylinder",
+                "fuel": "Gasoline", "transmission": "Steptronic Automatic",
+                "mileage": "0 km (new vehicle)", "power": "184 HP",
+                "consumption": "6.9L/100km", "emissions": "158 g/km CO2",
+                "drivetrain": "Rear-wheel drive",
+                "features": [
+                    "iDrive 7.0 system with touchscreen",
+                    "Harman Kardon premium sound system",
+                    "Sport seats with electric adjustment",
+                    "BMW ConnectedDrive connectivity",
+                    "Adaptive cruise control"
                 ],
-                "dimensiones": "4.71m x 1.83m x 1.44m",
-                "capacidad_maletero": "480 litros",
-                "garantia": "2 años garantía de fábrica + 3 años BMW Service Inclusive",
-                "imagen": "images/bmw_serie_3.webp"
+                "dimensions": "4.71m x 1.83m x 1.44m",
+                "trunk_capacity": "480 liters",
+                "warranty": "2-year factory warranty + 3-year BMW Service Inclusive",
+                "image": "images/bmw_serie_3.webp"
             },
             "SEAT_LEON_2023_BLU": {
-                "marca": "SEAT", "modelo": "León", "año": 2023,
-                "precio": "€25,000", "color": "azul Desire", "tipo": "hatchback",
-                "motor": "1.5L TSI de 4 cilindros",
-                "combustible": "Gasolina", "transmision": "Manual 6 velocidades",
-                "km": "0 km (vehículo nuevo)", "potencia": "130 CV",
-                "consumo": "5.8L/100km", "emisiones": "132 g/km CO2",
-                "traccion": "Tracción delantera",
-                "caracteristicas": [
-                    "SEAT Connect con conectividad total",
-                    "Faros Full LED de serie",
-                    "Cargador inalámbrico para smartphone",
-                    "Control de crucero",
-                    "Sistema de infoentretenimiento de 8.25 pulgadas"
+                "brand": "SEAT", "model": "León", "year": 2023,
+                "price": "€25,000", "color": "Desire blue", "type": "hatchback",
+                "engine": "1.5L TSI 4-cylinder",
+                "fuel": "Gasoline", "transmission": "6-speed Manual",
+                "mileage": "0 km (new vehicle)", "power": "130 HP",
+                "consumption": "5.8L/100km", "emissions": "132 g/km CO2",
+                "drivetrain": "Front-wheel drive",
+                "features": [
+                    "SEAT Connect with full connectivity",
+                    "Full LED headlights standard",
+                    "Wireless smartphone charger",
+                    "Cruise control",
+                    "8.25-inch infotainment system"
                 ],
-                "dimensiones": "4.37m x 1.80m x 1.46m",
-                "capacidad_maletero": "380 litros",
-                "garantia": "2 años garantía de fábrica",
-                "imagen": "images/seat_leon.webp"
+                "dimensions": "4.37m x 1.80m x 1.46m",
+                "trunk_capacity": "380 liters",
+                "warranty": "2-year factory warranty",
+                "image": "images/seat_leon.webp"
             },
             "MERCEDES_C_2023_BLK": {
-                "marca": "Mercedes-Benz", "modelo": "C-Class", "año": 2023,
-                "precio": "€42,000", "color": "negro obsidiana", "tipo": "sedán", 
-                "motor": "1.5L Turbo de 4 cilindros",
-                "combustible": "Gasolina", "transmision": "Automática 9G-TRONIC",
-                "km": "0 km (vehículo nuevo)", "potencia": "170 CV",
-                "consumo": "6.8L/100km", "emisiones": "155 g/km CO2",
-                "traccion": "Tracción trasera",
-                "caracteristicas": [
-                    "MBUX con inteligencia artificial",
-                    "Asientos deportivos AMG",
-                    "LED High Performance", 
-                    "Sistema de sonido Burmester",
-                    "Ambient lighting 64 colores"
+                "brand": "Mercedes-Benz", "model": "C-Class", "year": 2023,
+                "price": "€42,000", "color": "obsidian black", "type": "sedan", 
+                "engine": "1.5L Turbo 4-cylinder",
+                "fuel": "Gasoline", "transmission": "9G-TRONIC Automatic",
+                "mileage": "0 km (new vehicle)", "power": "170 HP",
+                "consumption": "6.8L/100km", "emissions": "155 g/km CO2",
+                "drivetrain": "Rear-wheel drive",
+                "features": [
+                    "MBUX with artificial intelligence",
+                    "AMG sport seats",
+                    "LED High Performance lights", 
+                    "Burmester sound system",
+                    "64-color ambient lighting"
                 ],
-                "dimensiones": "4.75m x 1.82m x 1.44m",
-                "capacidad_maletero": "455 litros",
-                "garantia": "2 años garantía Mercedes-Benz",
-                "imagen": "images/mercedes_c_class.png"
+                "dimensions": "4.75m x 1.82m x 1.44m",
+                "trunk_capacity": "455 liters",
+                "warranty": "2-year Mercedes-Benz warranty",
+                "image": "images/mercedes_c_class.png"
             },
             "AUDI_A4_2022_WHT": {
-                "marca": "Audi", "modelo": "A4", "año": 2022,
-                "precio": "€38,000", "color": "blanco glaciar", "tipo": "sedán",
-                "motor": "2.0L TFSI de 4 cilindros",
-                "combustible": "Gasolina", "transmision": "S tronic 7 velocidades",
-                "km": "15,000 km", "potencia": "190 CV",
-                "consumo": "6.5L/100km", "emisiones": "148 g/km CO2",
-                "traccion": "quattro",
-                "caracteristicas": [
+                "brand": "Audi", "model": "A4", "year": 2022,
+                "price": "€38,000", "color": "glacier white", "type": "sedan",
+                "engine": "2.0L TFSI 4-cylinder",
+                "fuel": "Gasoline", "transmission": "S tronic 7-speed",
+                "mileage": "15,000 km", "power": "190 HP",
+                "consumption": "6.5L/100km", "emissions": "148 g/km CO2",
+                "drivetrain": "quattro all-wheel drive",
+                "features": [
                     "Virtual Cockpit Plus",
-                    "quattro tracción integral",
+                    "quattro all-wheel drive",
                     "Bang & Olufsen Premium Sound",
                     "MMI Navigation plus",
-                    "Asientos deportivos"
+                    "Sport seats"
                 ],
-                "dimensiones": "4.76m x 1.84m x 1.43m",
-                "capacidad_maletero": "460 litros",
-                "garantia": "1 año garantía restante",
-                "imagen": "images/audi_a4.png"
-            },
-            "VW_TIGUAN_2022_RED": {
-                "marca": "Volkswagen", "modelo": "Tiguan", "año": 2022,
-                "precio": "€32,000", "color": "rojo tornado", "tipo": "SUV",
-                "motor": "1.5L TSI de 4 cilindros",
-                "combustible": "Gasolina", "transmision": "DSG automático",
-                "km": "22,000 km", "potencia": "150 CV",
-                "consumo": "7.0L/100km", "emisiones": "160 g/km CO2",
-                "traccion": "4MOTION",
-                "caracteristicas": [
-                    "Digital Cockpit Pro",
-                    "4MOTION tracción integral",
-                    "App-Connect",
-                    "Park Assist",
-                    "Climatronic"
-                ],
-                "dimensiones": "4.49m x 1.84m x 1.67m",
-                "capacidad_maletero": "520 litros",
-                "garantia": "1 año garantía restante",
-                "imagen": "images/volkswagen_tiguan.webp"
+                "dimensions": "4.76m x 1.84m x 1.43m",
+                "trunk_capacity": "460 liters",
+                "warranty": "1 year remaining warranty",
+                "image": "images/audi_a4.png"
             },
             "FORD_MUSTANG_2023_RED": {
-                "marca": "Ford", "modelo": "Mustang", "año": 2023,
-                "precio": "€55,000", "color": "rojo racing", "tipo": "deportivo",
-                "motor": "5.0L V8",
-                "combustible": "Gasolina", "transmision": "Manual 6 velocidades",
-                "km": "0 km (vehículo nuevo)", "potencia": "450 CV",
-                "consumo": "12.4L/100km", "emisiones": "290 g/km CO2",
-                "traccion": "Tracción trasera",
-                "caracteristicas": [
-                    "SYNC 3 con pantalla táctil",
-                    "Brembo frenos deportivos",
-                    "Recaro asientos deportivos",
-                    "Escape deportivo",
-                    "Launch Control"
+                "brand": "Ford", "model": "Mustang", "year": 2023,
+                "price": "€55,000", "color": "racing red", "type": "sports car",
+                "engine": "5.0L V8",
+                "fuel": "Gasoline", "transmission": "6-speed Manual",
+                "mileage": "0 km (new vehicle)", "power": "450 HP",
+                "consumption": "12.5L/100km", "emissions": "290 g/km CO2",
+                "drivetrain": "Rear-wheel drive",
+                "features": [
+                    "SYNC 3 infotainment system",
+                    "Track Apps performance data",
+                    "Selectable drive modes",
+                    "Performance Package",
+                    "Recaro sport seats"
                 ],
-                "dimensiones": "4.79m x 1.92m x 1.38m",
-                "capacidad_maletero": "408 litros",
-                "garantia": "2 años garantía Ford",
-                "imagen": "images/ford_mustang.jpeg"
+                "dimensions": "4.79m x 1.92m x 1.38m",
+                "trunk_capacity": "382 liters",
+                "warranty": "3-year Ford warranty",
+                "image": "images/ford_mustang.png"
             }
         }
         
@@ -552,42 +547,8 @@ Remember: Respond with ONLY the JSON object containing the translated text, no a
             return "I couldn't find that specific vehicle. Can you tell me which model interests you? I have detailed information on all our vehicles."
 
     def get_last_vehicle_image(self) -> str:
-        """Obtiene la ruta de la imagen del último vehículo consultado"""
+        """Get the path of the last vehicle image consulted"""
         return getattr(self, '_last_vehicle_image', None)
-
-    def schedule_appointment(self, details: str) -> str:
-        """Programa cita presencial en el concesionario"""
-        details_lower = details.lower()
-        
-        # Horarios disponibles
-        horarios = [
-            "Lunes a Viernes: 9:00 - 19:00",
-            "Sábados: 9:00 - 14:00", 
-            "Domingos: Cerrado"
-        ]
-        
-        servicios_cita = [
-            "Ver vehículos en persona",
-            "Consulta personalizada con nuestros asesores",
-            "Inspección detallada del vehículo",
-            "Documentación y trámites"
-        ]
-        
-        result = "📅 **Programar Cita Presencial**\n\n"
-        result += "🏢 **AutoMax - Concesionario Premium**\n"
-        result += "📍 Dirección: Av. Principal 123, Madrid\n\n"
-        
-        result += "🕐 **Horarios disponibles:**\n"
-        for horario in horarios:
-            result += f"• {horario}\n"
-        
-        result += "\n🎯 **¿Qué podemos hacer en tu cita?**\n"
-        for servicio in servicios_cita:
-            result += f"• {servicio}\n"
-        
-        result += "\n📞 **Para confirmar tu cita:**\n"
-        result += "• Teléfono: +34 91 XXX XX XX\n"
-        result += "• Email: citas@automax.es\n"
         result += "• WhatsApp: Este mismo número\n\n"
         
         result += "💡 **Información para tu cita:**\n"
@@ -707,6 +668,27 @@ Remember: Respond with ONLY the JSON object containing the translated text, no a
         # Simple filtering for English system
         filtered_cars = cars.copy()
         
+        # CRITICAL: Filter by fuel type first (electric, hybrid, gasoline)
+        fuel_keywords = {
+            "electric": "Electric",
+            "hybrid": "Hybrid", 
+            "gasoline": "Gasoline",
+            "petrol": "Gasoline",
+            "gas": "Gasoline"
+        }
+        
+        for fuel_key, fuel_value in fuel_keywords.items():
+            if fuel_key in query_lower:
+                original_count = len(filtered_cars)
+                filtered_cars = [car for car in filtered_cars if car["fuel"] == fuel_value]
+                # If no cars match this fuel type, return specific message
+                if len(filtered_cars) == 0:
+                    if fuel_value == "Electric":
+                        return "❌ Sorry, we currently don't have any electric vehicles in our inventory.\n\n🚗 Our current inventory consists of gasoline vehicles from premium brands like BMW, Mercedes-Benz, Audi, SEAT, and Ford.\n\n⚡ Would you like me to notify you when electric vehicles become available? Or would you like to see our efficient gasoline options?"
+                    elif fuel_value == "Hybrid":
+                        return "❌ Sorry, we currently don't have any hybrid vehicles in our inventory.\n\n🚗 Our current inventory consists of gasoline vehicles from premium brands like BMW, Mercedes-Benz, Audi, SEAT, and Ford.\n\n🌱 Would you like me to notify you when hybrid vehicles become available? Or would you like to see our fuel-efficient gasoline options?"
+                break
+        
         # Filter by brand
         if any(brand in query_lower for brand in ["bmw", "mercedes", "audi", "seat", "ford"]):
             for brand in ["bmw", "mercedes", "audi", "seat", "ford"]:
@@ -753,29 +735,44 @@ Remember: Respond with ONLY the JSON object containing the translated text, no a
             return "❌ Sorry, we currently don't have vehicles matching your search criteria.\n\n🚗 Our current inventory includes gasoline vehicles from brands like BMW, Mercedes-Benz, Audi, SEAT, and Ford.\n\nWould you like to see any of these available options? Or would you prefer that I notify you when we have vehicles that match your search?"
     
     def schedule_appointment(self, details: str) -> str:
-        """Simula programación de cita"""
-        return f"""📅 ¡Perfecto! Me encanta programar una cita para ti.
+        """Schedule in-person appointment at the dealership - ENGLISH VERSION"""
+        return f"""📅 Perfect! I'd be happy to schedule an appointment for you.
 
-Para completar tu reserva necesito:
-• Día y hora preferida
-• Tipo de vehículo que quieres probar
-• Tu nombre y teléfono de contacto
+To complete your reservation I need:
+• Preferred day and time
+• Type of vehicle you want to see
+• Your name and contact phone
 
-Horarios disponibles:
-- Lunes a Viernes: 9:00 - 18:00
-- Sábados: 9:00 - 14:00
+Available hours:
+- Monday to Friday: 9:00 AM - 6:00 PM
+- Saturday: 9:00 AM - 2:00 PM
+- Sunday: Closed
 
-¿Qué día te viene mejor? 🚗"""
+What day works best for you? 🚗
+
+📍 AutoMax Dealership
+Address: Av. Principal 123, Madrid
+Phone: +34 91 XXX XX XX"""
     
     def interpret_user_intent(self, user_message: str, messages: List[Dict[str, str]]) -> str:
         """
         Usa GPT para interpretar la intención del usuario y llamar la función apropiada
         """
         try:
-            # Crear prompt para determinar la intención
+            # Crear prompt para determinar la intención con contexto
+            context_history = ""
+            if len(messages) > 1:
+                # Obtener últimos 3 intercambios de conversación para contexto
+                recent_messages = messages[-6:] if len(messages) >= 6 else messages[:-1]
+                for msg in recent_messages:
+                    context_history += f"{msg['role']}: {msg['content'][:100]}...\n"
+            
             intent_prompt = {
                 "role": "system",
-                "content": """You are an assistant specialized in determining user intent at a car dealership.
+                "content": f"""You are an assistant specialized in determining user intent at a car dealership.
+
+CONVERSATION CONTEXT:
+{context_history}
 
 Analyze the user's message and determine which of these 5 actions should be executed:
 
@@ -786,18 +783,26 @@ Analyze the user's message and determine which of these 5 actions should be exec
    Examples: "more information about the BMW X3", "Serie 3 specifications", "complete details of the Mercedes"
 
 3. SCHEDULE_APPOINTMENT - Schedule appointment to visit the dealership (NO test drives)
-   Examples: "I want to make an appointment", "visit the dealership", "see the cars in person"
+   Examples: "I want to make an appointment", "visit the dealership", "see the cars in person", "schedule a visit"
+   ONLY use this for NEW appointment requests, NOT for providing appointment details
 
 4. COMPANY_INFO - Information about AutoMax (hours, location, contact)
    Examples: "where are you located", "your hours", "AutoMax phone number"
 
 5. GENERAL_CHAT - General conversation, greetings, or queries that don't require specific function
    Examples: "hello", "thanks", "how are you", questions about financing/test drives (which we don't offer)
+   ALSO use for simple questions about price/specific features when context shows a specific car was recently discussed
+   ALSO use for providing appointment details after appointment scheduling was already initiated (names, phones, times, etc.)
 
 Respond ONLY with one of these options: SEARCH_INVENTORY, VEHICLE_DETAILS, SCHEDULE_APPOINTMENT, COMPANY_INFO, or GENERAL_CHAT
 
-If the user asks for specific information about a concrete model (like "more information about the BMW X3"), it's VEHICLE_DETAILS.
-If they search for general options (like "what BMW do you have?"), it's SEARCH_INVENTORY."""
+SPECIAL RULES:
+- If user asks "What is the price?" or "How much?" or "What does it cost?" and context shows a specific car was just discussed, use GENERAL_CHAT
+- If the user asks for specific information about a concrete model (like "more information about the BMW X3"), it's VEHICLE_DETAILS
+- If they search for general options (like "what BMW do you have?"), it's SEARCH_INVENTORY
+- If user provides appointment details (name, phone, time, date) after already asking for an appointment, use GENERAL_CHAT
+- If context shows appointment scheduling was already initiated and user provides information, use GENERAL_CHAT
+- SCHEDULE_APPOINTMENT is ONLY for initial requests, not for follow-up information"""
             }
             
             if self.client:

@@ -120,10 +120,10 @@ class CarDealershipWhatsAppAgent:
             return result
             
         except Exception as e:
-            print(f"❌ Error procesando mensaje de {user_phone}: {str(e)}")
+            print(f"❌ Error processing message from {user_phone}: {str(e)}")
             return {
                 "success": False,
-                "response": "Lo siento, hubo un error procesando tu mensaje. ¿Puedes intentar de nuevo?",
+                "response": "Sorry, there was an error processing your message. Can you try again?",
                 "response_type": "error",
                 "actions": [],
                 "suggestions": [],
@@ -239,22 +239,22 @@ class CarDealershipWhatsAppAgent:
     
     def get_welcome_message(self, user_name: Optional[str] = None) -> Dict[str, Any]:
         """
-        Genera mensaje de bienvenida para nuevos usuarios
+        Generate welcome message for new users - ENGLISH VERSION
         """
         name_part = f" {user_name}" if user_name else ""
         
         return {
-            "response": f"¡Hola{name_part}! 👋 Bienvenido a AutoMax, tu concesionario de confianza.\n\n🚗 Estoy aquí para ayudarte a encontrar el auto perfecto para ti.\n\n¿En qué puedo ayudarte hoy?",
+            "response": f"Hello{name_part}! 👋 Welcome to AutoMax, your trusted car dealership.\n\n🚗 I'm here to help you find the perfect car for you.\n\nHow can I assist you today?",
             "response_type": "welcome",
             "actions": [{
                 "type": "buttons",
                 "data": {
                     "header": "🚗 AutoMax",
-                    "body": "¿Qué te gustaría hacer?",
+                    "body": "What would you like to do?",
                     "buttons": [
-                        {"id": "search_cars", "title": "🔍 Buscar autos"},
-                        {"id": "schedule_appointment", "title": "📅 Agendar cita"},
-                        {"id": "contact_info", "title": "📞 Contacto"}
+                        {"id": "search_cars", "title": "🔍 Search cars"},
+                        {"id": "schedule_appointment", "title": "📅 Schedule appointment"},
+                        {"id": "contact_info", "title": "📞 Contact"}
                     ]
                 }
             }],
@@ -282,16 +282,16 @@ class CarDealershipWhatsAppAgent:
         topics = []
         if any(brand in recent_content.lower() for brand in ["bmw", "toyota", "tesla", "honda", "ford", "audi"]):
             topics.append("búsqueda de autos")
-        if any(word in recent_content.lower() for word in ["cita", "agendar", "appointment"]):
-            topics.append("agendamiento")
-        if any(word in recent_content.lower() for word in ["precio", "financiamiento", "$"]):
-            topics.append("precios/financiamiento")
+        if any(word in recent_content.lower() for word in ["cita", "agendar", "appointment", "schedule"]):
+            topics.append("appointment")
+        if any(word in recent_content.lower() for word in ["precio", "financiamiento", "$", "price", "financing"]):
+            topics.append("pricing/financing")
         
-        return f"Conversación: {total_messages} mensajes ({user_messages} del usuario). Temas: {', '.join(topics) if topics else 'conversación general'}."
+        return f"Conversation: {total_messages} messages ({user_messages} from user). Topics: {', '.join(topics) if topics else 'general conversation'}."
     
     def reset_user_session(self, user_phone: str):
         """
-        Reinicia la sesión de un usuario
+        Reset a user's session
         """
         if user_phone in self.user_conversations:
             del self.user_conversations[user_phone]
